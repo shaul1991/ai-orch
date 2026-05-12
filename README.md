@@ -48,6 +48,7 @@ AI_DOC_PROVIDER=claude-code AI_DOC_MODEL=default scripts/sdd-docs.sh "topic" doc
 - `.agents/plugins/`: Codex marketplace manifest
 - `plugins/ai-orch/`: Claude Code/Codex native command plugin
 - `.ai-orch/`: 개인별 branch flow 실행 상태 cache. `README.md`만 추적하고 실행 이력은 git에서 무시
+- `ai-orch.protect`: secret/critical file 접근 보호 공유 정책
 - `.opencode/`: oh-my-openagent/OpenCode 설정 및 skill
 - `scripts/`: SDD 실행 wrapper, guard, test, PR helper
 
@@ -84,6 +85,7 @@ local clone을 직접 등록할 때는 repo root에서 `claude plugin marketplac
 ```text
 /ai-orch:help
 /ai-orch:init
+/ai-orch:protect <action> [args...]
 /ai-orch:status [feature]
 /ai-orch:docs <topic> <output-markdown-path>
 /ai-orch:feature <feature> [description]
@@ -99,6 +101,7 @@ Claude Code나 Codex에서 shell command 형태로 실행할 때는 `scripts/ai-
 ```bash
 scripts/ai-orch.sh help
 scripts/ai-orch.sh init
+scripts/ai-orch.sh protect list
 scripts/ai-orch.sh status
 scripts/ai-orch.sh feature login "로그인 기능"
 scripts/ai-orch.sh plan login
@@ -117,6 +120,8 @@ scripts/ai-orch.sh explain implement login
 `scripts/ai-orch.sh`로 실행한 flow는 현재 git branch 기준으로 `.ai-orch/`에 local 상태를 기록한다. 이 디렉터리는 개인별 실행 이력/캐시이므로 git에서 무시되며, `/ai-orch:status` 또는 `scripts/ai-orch.sh status`로 `feature -> Human Approved -> plan -> ready -> implement -> review -> pr -> human review -> merge` 체크리스트와 산출물 링크를 확인한다.
 
 plugin 설치 직후 대상 repo에서는 먼저 `/ai-orch:init` 또는 `scripts/ai-orch.sh init`을 실행한다. 이 command가 `.ai-orch/README.md`와 `.gitignore`의 local state 규칙을 준비한다.
+
+secret/critical file 접근은 `/ai-orch:protect` 또는 `scripts/ai-orch.sh protect`로 확인한다. 기본 정책은 `ai-orch.protect`, 개인 추가 차단은 `.ai-orch/protect.local`, 사용자가 명시 확인한 local 허용은 `.ai-orch/protect.allow.local`에 둔다.
 
 ## 설치 전제 조건
 
@@ -276,7 +281,7 @@ gh auth switch --user atms-jihoon
 이 repo에서 issue/PR 명령이 대상 repository를 찾는 방식은 두 가지다.
 
 1. git `origin` remote 사용
-2. `.env`의 `AI_GITHUB_REPO=owner/repo` 사용
+2. `.ai-orch/setting.local.json`의 `AI_GITHUB_REPO=owner/repo` 사용
 
 현재 repo에 remote가 있는지 확인:
 
@@ -284,17 +289,19 @@ gh auth switch --user atms-jihoon
 git remote -v
 ```
 
-remote가 없거나 helper script의 대상 repo를 명시적으로 고정하려면 `.env`에 `AI_GITHUB_REPO`를 설정한다. 여러 GitHub 계정을 쓴다면 `AI_GITHUB_ACCOUNT`도 함께 설정한다. wrapper script는 active `gh` 계정이 `AI_GITHUB_ACCOUNT`와 다르면 실패하고 전환 명령을 안내한다.
+remote가 없거나 helper script의 대상 repo를 명시적으로 고정하려면 `.ai-orch/setting.local.json`에 `AI_GITHUB_REPO`를 설정한다. 여러 GitHub 계정을 쓴다면 `AI_GITHUB_ACCOUNT`도 함께 설정한다. wrapper script는 active `gh` 계정이 `AI_GITHUB_ACCOUNT`와 다르면 실패하고 전환 명령을 안내한다.
 
-```bash
-AI_GITHUB_ACCOUNT=shaul1991
-AI_GITHUB_REPO=shaul1991/ai-orch
-AI_GITHUB_BASE_BRANCH=main
-AI_GITHUB_ISSUE_LIMIT=20
-AI_GITHUB_PR_LIMIT=20
+```json
+{
+  "AI_GITHUB_ACCOUNT": "shaul1991",
+  "AI_GITHUB_REPO": "shaul1991/ai-orch",
+  "AI_GITHUB_BASE_BRANCH": "main",
+  "AI_GITHUB_ISSUE_LIMIT": "20",
+  "AI_GITHUB_PR_LIMIT": "20"
+}
 ```
 
-local 개발에서는 GitHub access token을 `.env`에 넣지 않는다. `gh auth login`과 `gh auth switch`를 사용하면 token은 OS keychain에 저장되고, `.env`에는 repo/account 같은 비밀이 아닌 설정만 남는다.
+local 개발에서는 GitHub access token을 `.ai-orch/setting.local.json`에 넣지 않는다. `gh auth login`과 `gh auth switch`를 사용하면 token은 OS keychain에 저장되고, setting 파일에는 repo/account 같은 비밀이 아닌 설정만 남는다.
 
 GitHub 연결 확인:
 
@@ -324,29 +331,29 @@ System OK
 
 ### 8. 로컬 provider 설정
 
-공유 템플릿은 `.env.example`에 둔다. 개인별 실제 설정은 `.env`에 둔다.
+공유 기본값은 `.ai-orch/setting.json`에 둔다. 사용할 수 있는 key와 기본값 설명은 `.ai-orch/settings.example.json`에서 확인한다. 개인별 override는 `.ai-orch/setting.local.json`에 둔다.
 
 ```bash
-cp .env.example .env
+cp .ai-orch/settings.example.json .ai-orch/setting.local.json
 ```
 
-`.env`는 git에 커밋하지 않는다. wrapper script는 실행 시 `.env`를 자동으로 읽는다.
+`.ai-orch/setting.local.json`은 git에 커밋하지 않는다. wrapper script는 실행 시 `.ai-orch/setting.local.json`을 먼저 읽고, 없는 값은 `.ai-orch/setting.json`에서 읽는다.
 
 예:
 
-```bash
-AI_CODE_PROVIDER=codex-acp
-AI_CODE_MODEL=gpt-5.5
-
-AI_DOC_PROVIDER=claude-code
-AI_DOC_MODEL=default
-
-AI_GITHUB_BASE_BRANCH=main
-AI_GITHUB_ISSUE_LIMIT=20
-AI_GITHUB_PR_LIMIT=20
+```json
+{
+  "AI_CODE_PROVIDER": "codex-acp",
+  "AI_CODE_MODEL": "gpt-5.5",
+  "AI_DOC_PROVIDER": "claude-code",
+  "AI_DOC_MODEL": "default",
+  "AI_GITHUB_BASE_BRANCH": "main",
+  "AI_GITHUB_ISSUE_LIMIT": "20",
+  "AI_GITHUB_PR_LIMIT": "20"
+}
 ```
 
-shell에서 직접 넘긴 값이 `.env`보다 우선한다.
+shell에서 직접 넘긴 값이 `.ai-orch/setting.local.json`과 `.ai-orch/setting.json`보다 우선한다.
 
 ```bash
 AI_CODE_PROVIDER=claude-code AI_CODE_MODEL=default scripts/sdd-implement.sh sample-feature
@@ -508,24 +515,26 @@ scripts/sdd-review-pr.sh "$FEATURE"
 
 ## provider/model override
 
-기본값은 wrapper script와 `.env.example`에 정의한다.
+기본값은 wrapper script와 `.ai-orch/setting.json`에 정의한다.
 
-```bash
-AI_DOC_PROVIDER=codex-acp
-AI_DOC_MODEL=gpt-5.5
-AI_ARCH_PROVIDER=claude-code
-AI_ARCH_MODEL=default
-AI_CODE_PROVIDER=claude-code
-AI_CODE_MODEL=default
-AI_REVIEW_PROVIDER=claude-code
-AI_REVIEW_MODEL=default
+```json
+{
+  "AI_DOC_PROVIDER": "codex-acp",
+  "AI_DOC_MODEL": "gpt-5.5",
+  "AI_ARCH_PROVIDER": "claude-code",
+  "AI_ARCH_MODEL": "default",
+  "AI_CODE_PROVIDER": "claude-code",
+  "AI_CODE_MODEL": "default",
+  "AI_REVIEW_PROVIDER": "claude-code",
+  "AI_REVIEW_MODEL": "default"
+}
 ```
 
-개인별 기본값은 `.env`에서 관리한다.
+개인별 기본값은 `.ai-orch/setting.local.json`에서 관리한다.
 
 ```bash
-cp .env.example .env
-vi .env
+cp .ai-orch/settings.example.json .ai-orch/setting.local.json
+vi .ai-orch/setting.local.json
 ```
 
 문서 작업을 Claude Code로 실행:
@@ -576,6 +585,21 @@ scripts/check-sdd-docs.sh sample-feature
 scripts/ai-guard.sh git status --short
 ```
 
+secret/critical file 접근 보호:
+
+```bash
+scripts/ai-orch.sh protect list
+scripts/ai-orch.sh protect check-read .env
+scripts/ai-orch.sh protect check-write .env
+```
+
+보호 파일 접근이 필요하면 먼저 차단 메시지를 확인하고, 사용자가 직접 승인한 경우에만 local allow를 등록한다.
+
+```bash
+scripts/ai-orch.sh protect allow-read .env
+scripts/ai-orch.sh protect revoke .env
+```
+
 프로젝트 테스트:
 
 ```bash
@@ -614,20 +638,24 @@ scripts/create-pr-draft.sh sample-feature
 
 ## GitHub issue/PR 관리
 
-GitHub 명령은 `gh`를 직접 사용해도 되고, repo wrapper script를 사용해도 된다. wrapper script는 `.env`를 자동으로 읽고 `AI_GITHUB_REPO` 또는 git `origin` remote를 기준으로 대상 repository를 결정한다.
+GitHub 명령은 `gh`를 직접 사용해도 되고, repo wrapper script를 사용해도 된다. wrapper script는 `.ai-orch/setting.local.json`과 `.ai-orch/setting.json`을 자동으로 읽고 `AI_GITHUB_REPO` 또는 git `origin` remote를 기준으로 대상 repository를 결정한다.
 
-여러 GitHub 계정을 쓰는 환경에서는 `.env`에 `AI_GITHUB_ACCOUNT`를 지정한다.
+여러 GitHub 계정을 쓰는 환경에서는 `.ai-orch/setting.local.json`에 `AI_GITHUB_ACCOUNT`를 지정한다.
 
-```bash
-AI_GITHUB_ACCOUNT=shaul1991
-AI_GITHUB_REPO=shaul1991/ai-orch
+```json
+{
+  "AI_GITHUB_ACCOUNT": "shaul1991",
+  "AI_GITHUB_REPO": "shaul1991/ai-orch"
+}
 ```
 
 회사 계정으로 작업하는 repository라면 해당 login을 지정한다.
 
-```bash
-AI_GITHUB_ACCOUNT=atms-jihoon
-AI_GITHUB_REPO=atms-backend/example-repo
+```json
+{
+  "AI_GITHUB_ACCOUNT": "atms-jihoon",
+  "AI_GITHUB_REPO": "atms-backend/example-repo"
+}
 ```
 
 wrapper script는 `gh auth status`로 active account를 확인한다. 값이 다르면 GitHub 작업을 실행하지 않고 다음 형태의 전환 명령을 안내한다.
@@ -782,11 +810,13 @@ scripts/github-check.sh
 git remote add origin https://github.com/<owner>/<repo>.git
 ```
 
-또는 `.env`:
+또는 `.ai-orch/setting.local.json`:
 
-```bash
-AI_GITHUB_ACCOUNT=<github-login>
-AI_GITHUB_REPO=<owner>/<repo>
+```json
+{
+  "AI_GITHUB_ACCOUNT": "<github-login>",
+  "AI_GITHUB_REPO": "<owner>/<repo>"
+}
 ```
 
 여러 계정이 있고 active account가 다르면:
@@ -818,3 +848,5 @@ scripts/run-tests.sh
 - `.opencode/node_modules/`
 - `.opencode/package*.json`
 - `.env*`
+- `.ai-orch/protect.local`
+- `.ai-orch/protect.allow.local`

@@ -61,15 +61,17 @@ These defaults are configurable per task through the wrapper scripts in `scripts
 
 Defaults:
 
-```bash
-AI_DOC_PROVIDER=codex-acp
-AI_DOC_MODEL=gpt-5.5
-AI_ARCH_PROVIDER=claude-code
-AI_ARCH_MODEL=default
-AI_CODE_PROVIDER=claude-code
-AI_CODE_MODEL=default
-AI_REVIEW_PROVIDER=claude-code
-AI_REVIEW_MODEL=default
+```json
+{
+  "AI_DOC_PROVIDER": "codex-acp",
+  "AI_DOC_MODEL": "gpt-5.5",
+  "AI_ARCH_PROVIDER": "claude-code",
+  "AI_ARCH_MODEL": "default",
+  "AI_CODE_PROVIDER": "claude-code",
+  "AI_CODE_MODEL": "default",
+  "AI_REVIEW_PROVIDER": "claude-code",
+  "AI_REVIEW_MODEL": "default"
+}
 ```
 
 Override per command:

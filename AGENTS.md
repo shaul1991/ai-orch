@@ -78,6 +78,7 @@ Stop immediately when:
 - Security or authorization policy is unclear
 - Payment, pricing, user permission, or customer-facing policy is affected
 - PR draft is created
+- A requested file matches `ai-orch.protect` or `.ai-orch/protect.local` and no local human-confirmed allow exists
 
 ## Forbidden Actions
 
@@ -89,3 +90,17 @@ Never run:
 - production deploy commands
 - destructive database commands
 - migration rollback commands without explicit human approval
+
+## Protected Files
+
+Before reading, editing, deleting, summarizing, or exposing suspected secret/critical files, run:
+
+- `scripts/ai-orch.sh protect check-read <path>`
+- `scripts/ai-orch.sh protect check-write <path>`
+
+Protected paths are defined in:
+
+- `ai-orch.protect`
+- `.ai-orch/protect.local`
+
+Local human-confirmed allows are stored in `.ai-orch/protect.allow.local` and must only be added after explicit user confirmation.

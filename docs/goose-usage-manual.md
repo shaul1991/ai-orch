@@ -8,7 +8,7 @@
 
 이 저장소에서 `goose`는 AI orchestration 실행 레이어다.
 
-- `scripts/sdd-*.sh` wrapper는 `.env`를 읽고 provider/model을 설정한다.
+- `scripts/sdd-*.sh` wrapper는 `.ai-orch/setting.local.json`과 `.ai-orch/setting.json`을 읽고 provider/model을 설정한다.
 - `.goose/recipes/*.yaml`은 각 SDD 단계의 agent instruction을 정의한다.
 - `goose run`은 recipe와 parameter를 받아 실제 AI 작업을 실행한다.
 
@@ -38,33 +38,33 @@ scripts/run-tests.sh
 
 ## 3. Provider와 Model 설정
 
-공유 기본값은 `.env.example`에 있다.
+공유 기본값은 `.ai-orch/setting.json`에 있다. 사용할 수 있는 key와 기본값 설명은 `.ai-orch/settings.example.json`에서 확인한다.
 
 ```bash
-cp .env.example .env
+cp .ai-orch/settings.example.json .ai-orch/setting.local.json
 ```
 
 주요 변수:
 
-```bash
-AI_DOC_PROVIDER=codex-acp
-AI_DOC_MODEL=gpt-5.5
-
-AI_ARCH_PROVIDER=claude-code
-AI_ARCH_MODEL=default
-
-AI_CODE_PROVIDER=claude-code
-AI_CODE_MODEL=default
-
-AI_REVIEW_PROVIDER=claude-code
-AI_REVIEW_MODEL=default
+```json
+{
+  "AI_DOC_PROVIDER": "codex-acp",
+  "AI_DOC_MODEL": "gpt-5.5",
+  "AI_ARCH_PROVIDER": "claude-code",
+  "AI_ARCH_MODEL": "default",
+  "AI_CODE_PROVIDER": "claude-code",
+  "AI_CODE_MODEL": "default",
+  "AI_REVIEW_PROVIDER": "claude-code",
+  "AI_REVIEW_MODEL": "default"
+}
 ```
 
 우선순위는 다음과 같다.
 
 1. shell에서 직접 넘긴 환경 변수
-2. `.env`
-3. wrapper script의 fallback 기본값
+2. `.ai-orch/setting.local.json`
+3. `.ai-orch/setting.json`
+4. wrapper script의 fallback 기본값
 
 예:
 

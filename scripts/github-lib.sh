@@ -4,7 +4,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 source "$SCRIPT_DIR/load-env.sh"
-load_project_env "$PROJECT_ROOT/.env"
+load_project_env "$PROJECT_ROOT"
 
 require_gh() {
   if ! command -v gh >/dev/null 2>&1; then
@@ -115,6 +115,6 @@ resolve_gh_repo() {
   fi
 
   echo "[GITHUB_FAILED] Could not resolve GitHub repository." >&2
-  echo "Set AI_GITHUB_REPO=owner/repo in .env or add an origin remote." >&2
+  echo "Set AI_GITHUB_REPO=owner/repo in .ai-orch/setting.local.json or add an origin remote." >&2
   exit 1
 }

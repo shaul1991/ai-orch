@@ -47,6 +47,7 @@ AI must not:
 - Deploy to production
 - Resolve human review comments without confirmation
 - Modify authentication, authorization, payment, pricing, or customer-impacting policy without explicit approval
+- Read, edit, delete, summarize, or expose secret/critical files protected by `ai-orch.protect` or `.ai-orch/protect.local` without explicit local human confirmation
 
 AI must:
 
@@ -56,8 +57,23 @@ AI must:
 - Run tests after implementation
 - Produce self-review before PR
 - Stop after PR draft and return control to human
+- Use `scripts/ai-orch.sh protect check-read <path>` or `scripts/ai-orch.sh protect check-write <path>` before accessing a suspected secret/critical path
 
-## 3. Escalation Rule
+## 3. Protected File Access
+
+Protected file policy:
+
+- Shared deny/allow policy: `ai-orch.protect`
+- Local user-specific deny policy: `.ai-orch/protect.local`
+- Local user-confirmed allow policy: `.ai-orch/protect.allow.local`
+
+If a protected path is required, AI must stop at the guard output and ask the human to confirm. Only after the human explicitly approves may the local allow command be run, for example:
+
+```bash
+scripts/ai-orch.sh protect allow-read .env
+```
+
+## 4. Escalation Rule
 
 When business or domain ambiguity is found, AI must stop and write:
 

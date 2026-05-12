@@ -10,7 +10,7 @@ flowchart LR
     U[User / Human] --> NATIVE["Native Command<br/>/ai-orch:plan feature"]
     U --> CMD["Shell Command<br/>scripts/ai-orch.sh plan feature<br/>scripts/sdd-plan.sh feature"]
     NATIVE --> CMD
-    CMD --> ENV["scripts/load-env.sh<br/>.env 로딩"]
+    CMD --> ENV["scripts/load-env.sh<br/>.ai-orch settings 로딩"]
     ENV --> VAR["Provider/Model 선택<br/>AI_DOC_* / AI_ARCH_* / AI_CODE_* / AI_REVIEW_*"]
     VAR --> GOOSE["goose run<br/>--provider<br/>--model<br/>--recipe<br/>--params feature=..."]
     GOOSE --> RECIPE[".goose/recipes/*.yaml<br/>단계별 instruction"]
@@ -47,7 +47,7 @@ sequenceDiagram
     participant Docs as docs/specs/sample-feature/
 
     Human->>Script: scripts/sdd-plan.sh sample-feature
-    Script->>Env: load_project_env .env
+    Script->>Env: load_project_env .ai-orch settings
     Env-->>Script: AI_ARCH_PROVIDER / AI_ARCH_MODEL
     Script->>Goose: goose run --provider --model --recipe --params feature=sample-feature
     Goose->>Recipe: render recipe with feature parameter
@@ -56,7 +56,7 @@ sequenceDiagram
     Agent->>Docs: write plan artifacts
 ```
 
-`scripts/sdd-plan.sh`는 직접 planning을 하지 않는다. 이 script는 `.env`를 읽고 `goose run`을 정확한 provider/model/recipe/parameter로 호출하는 thin wrapper다.
+`scripts/sdd-plan.sh`는 직접 planning을 하지 않는다. 이 script는 `.ai-orch/setting.local.json`과 `.ai-orch/setting.json`을 읽고 `goose run`을 정확한 provider/model/recipe/parameter로 호출하는 thin wrapper다.
 
 ## 3. SDD 단계별 입출력
 
@@ -103,7 +103,7 @@ docs/specs/{feature}/
 ```mermaid
 flowchart TD
     SH[Shell env override] --> PICK{값 있음?}
-    DOTENV[.env] --> PICK2{값 있음?}
+    DOTENV[.ai-orch/setting.local.json<br/>.ai-orch/setting.json] --> PICK2{값 있음?}
     DEFAULT[script fallback default] --> RUN[goose run]
 
     PICK -- Yes --> RUN
@@ -244,7 +244,7 @@ flowchart LR
     ENTRY --> GOOSE[goose run]
     ENTRY --> GH[gh CLI]
     ENTRY --> GUARD[검증/차단]
-    INTERNAL --> ENV[.env]
+    INTERNAL --> ENV[.ai-orch settings]
 ```
 
 #### 사용자가 직접 실행하는 script
@@ -276,7 +276,7 @@ flowchart LR
 
 | Script | 호출 방식 | 연결되는 script | 역할 |
 |---|---|---|---|
-| `scripts/load-env.sh` | `source` | `sdd-*.sh`, `github-lib.sh` | `.env`를 읽어 환경 변수를 export |
+| `scripts/load-env.sh` | `source` | `sdd-*.sh`, `github-lib.sh` | `.ai-orch/setting.local.json`, `.ai-orch/setting.json`을 읽어 `AI_` 환경 변수를 export |
 | `scripts/github-lib.sh` | `source` | `github-*.sh`, `create-pr-draft.sh` | `gh` 설치/인증 확인, repository 해석 |
 
 #### 내부에서 다른 script를 호출하는 경우
@@ -287,7 +287,7 @@ flowchart LR
 | `scripts/run-tests.sh` | `scripts/check-sdd-docs.sh sample-feature` | 기본 테스트에 sample SDD gate를 포함 |
 | `scripts/create-pr-draft.sh` | `scripts/github-lib.sh` → `scripts/load-env.sh` | GitHub repo와 인증을 확인한 뒤 draft PR 생성 |
 | `scripts/github-*.sh` | `scripts/github-lib.sh` → `scripts/load-env.sh` | 공통 GitHub 설정과 인증을 재사용 |
-| `scripts/sdd-*.sh` | `scripts/load-env.sh` → `goose run` | `.env` 기반 provider/model로 Goose recipe 실행 |
+| `scripts/sdd-*.sh` | `scripts/load-env.sh` → `goose run` | `.ai-orch` settings 기반 provider/model로 Goose recipe 실행 |
 | `scripts/sdd-implement.sh` | `goose recipe`가 `scripts/check-sdd-docs.sh {feature}` 실행을 지시 | 구현 전 gate를 AI 실행 절차에 포함 |
 
 ### 9.2 SDD Goose Wrapper Scripts
@@ -296,7 +296,7 @@ flowchart LR
 
 ```text
 입력 인자 확인
-→ scripts/load-env.sh 로 .env 로딩
+→ scripts/load-env.sh 로 .ai-orch settings 로딩
 → provider/model 선택
 → goose run --recipe ...
 → docs/specs/{feature}/ 산출물 생성 또는 갱신
@@ -351,6 +351,7 @@ Marketplace/manifest:
 |---|---|---|
 | `/ai-orch:help` | `scripts/ai-orch.sh help` | 사용 가능한 flow와 예시 출력 |
 | `/ai-orch:init` | `scripts/ai-orch.sh init` | `.ai-orch/README.md`와 `.gitignore` local state 규칙 초기화 |
+| `/ai-orch:protect <action> [args...]` | `scripts/ai-orch.sh protect <action> [args...]` | secret/critical file 접근 보호 정책 확인과 local allow 관리 |
 | `/ai-orch:status [feature]` | `scripts/ai-orch.sh status [feature]` | 현재 branch의 flow 체크리스트와 산출물 링크 출력 |
 | `/ai-orch:docs <topic> <output>` | `scripts/ai-orch.sh docs <topic> <output>` | 문서/리서치 작성 |
 | `/ai-orch:feature <feature> [description]` | `scripts/ai-orch.sh feature <feature> [description]` | 새 feature SDD 초안 작성 |
@@ -387,7 +388,7 @@ Claude Code prompt 안에서는 다음 slash command로도 설치할 수 있다.
 flow 이름 확인
 → 실행 계획 출력
 → flow에 연결된 기존 script들을 순서대로 실행
-→ 각 script가 필요하면 .env를 읽고 goose/gh/local 검증을 수행
+→ 각 script가 필요하면 .ai-orch settings를 읽고 goose/gh/local 검증을 수행
 → .ai-orch/에 현재 branch 기준 실행 상태와 산출물 링크를 기록
 ```
 
@@ -397,6 +398,7 @@ flow 이름 확인
 |---|---|---|
 | `scripts/ai-orch.sh help` | 없음 | 사용 가능한 flow와 현재 branch 진행현황 요약 출력 |
 | `scripts/ai-orch.sh init` | `scripts/ai-orch-init.sh` | `.ai-orch/README.md`와 `.gitignore` local state 규칙 초기화 |
+| `scripts/ai-orch.sh protect <action> [args...]` | `scripts/ai-protect.sh` | secret/critical file 접근 보호 정책 확인과 local allow 관리 |
 | `scripts/ai-orch.sh status [feature]` | 없음 | `.ai-orch/branches/{branch}.md`를 렌더링하고 checklist 출력 |
 | `scripts/ai-orch.sh doctor` | `scripts/run-tests.sh` | 로컬 script syntax와 sample SDD gate 확인 |
 | `scripts/ai-orch.sh docs <topic> <output>` | `scripts/sdd-docs.sh` | 문서/리서치 작성 |
@@ -415,6 +417,7 @@ flow 이름 확인
 
 ```bash
 scripts/ai-orch.sh init
+scripts/ai-orch.sh protect list
 scripts/ai-orch.sh status
 scripts/ai-orch.sh explain implement login
 scripts/ai-orch.sh implement login
@@ -437,11 +440,18 @@ scripts/ai-orch.sh init
 /.ai-orch/*
 !/.ai-orch/
 !/.ai-orch/README.md
+!/.ai-orch/setting.json
+!/.ai-orch/settings.example.json
 ```
 
 | Path | Git 처리 | 역할 |
 |---|---|---|
 | `.ai-orch/README.md` | tracked | local state 디렉터리 설명 |
+| `.ai-orch/setting.json` | tracked | AI Orch 공유 설정 |
+| `.ai-orch/settings.example.json` | tracked | 설정 key, 기본값, 설명 예시 |
+| `.ai-orch/setting.local.json` | ignored | 개인별 설정 override |
+| `.ai-orch/protect.local` | ignored | 개인별 추가 deny policy |
+| `.ai-orch/protect.allow.local` | ignored | 사용자 확인 후 등록한 local allow policy |
 | `.ai-orch/state/{branch}.state` | ignored | branch별 flow 실행 상태 key-value cache |
 | `.ai-orch/branches/{branch}.md` | ignored | 사람이 읽는 checklist와 artifact link |
 | `.ai-orch/runs/*.md` | ignored | 개별 실행 기록 |
@@ -454,31 +464,60 @@ scripts/ai-orch.sh init
 
 `human approve`는 `requirements.md`와 `acceptance-criteria.md`에 `Human Approved`가 모두 있을 때만 완료로 표시된다. `human review`와 `merge`는 AI가 자동 완료하지 않고 항상 사람 소유 단계로 남긴다.
 
-### 9.6 `scripts/load-env.sh`
+### 9.6 Protected File Access
+
+secret/critical file 접근 보호는 policy 기반으로 동작한다.
+
+| Policy | Git 처리 | 역할 |
+|---|---|---|
+| `ai-orch.protect` | tracked | 공유 deny/allow glob policy |
+| `.ai-orch/protect.local` | ignored | 개인별 추가 deny glob policy |
+| `.ai-orch/protect.allow.local` | ignored | 사용자가 직접 확인한 local allow |
+
+기본 확인 command:
+
+```bash
+scripts/ai-orch.sh protect list
+scripts/ai-orch.sh protect check-read .env
+scripts/ai-orch.sh protect check-write .env
+```
+
+보호 path 접근이 필요하면 guard가 먼저 차단하고 local allow 등록 명령을 출력한다. 사용자가 직접 승인한 경우에만 다음처럼 등록한다.
+
+```bash
+scripts/ai-orch.sh protect allow-read .env
+scripts/ai-orch.sh protect allow-write .env
+scripts/ai-orch.sh protect revoke .env
+```
+
+`scripts/ai-guard.sh`는 위험 command pattern을 검사한 뒤 `scripts/ai-protect.sh check-command <command...>`를 호출한다. 이 보호는 agent가 wrapper와 규칙을 따르는 repo-level guard이며, OS permission이나 secret manager를 대체하지 않는다.
+
+### 9.7 `scripts/load-env.sh`
 
 모든 주요 wrapper가 공유하는 환경 로더다.
 
 동작:
 
-1. `.env`가 없으면 조용히 통과한다.
-2. 빈 줄과 주석을 무시한다.
-3. `KEY=value` 또는 `export KEY=value` 형식을 읽는다.
-4. key가 shell variable 이름으로 유효할 때만 export한다.
-5. 이미 shell에 같은 key가 있으면 덮어쓰지 않는다.
+1. `.ai-orch/setting.local.json`이 있으면 먼저 읽는다.
+2. `.ai-orch/setting.json`이 있으면 이후 읽는다.
+3. JSON top-level key 중 `AI_`로 시작하는 key만 export한다.
+4. shell에 직접 지정된 값은 덮어쓰지 않는다.
+5. local settings가 shared settings보다 우선한다.
 
-따라서 shell에서 직접 넘긴 값이 `.env`보다 우선한다.
+따라서 우선순위는 `shell env` → `.ai-orch/setting.local.json` → `.ai-orch/setting.json`이다.
 
 ```bash
 AI_CODE_PROVIDER=codex-acp scripts/sdd-implement.sh sample-feature
 ```
 
-### 9.7 Guard and Test Scripts
+### 9.8 Guard and Test Scripts
 
 | Script | 입력 | 내부 동작 | 결과 |
 |---|---|---|---|
 | `scripts/check-sdd-docs.sh` | `<feature-name>` | 필수 SDD 문서, `Human Approved`, clarification marker, task ID, traceability를 검사 | 성공 시 `[SDD_GATE_PASSED]`, 실패 시 `[SDD_GATE_FAILED]` |
 | `scripts/run-tests.sh` | 없음 | `AI_TEST_COMMANDS`가 있으면 줄 단위로 실행, 없으면 `bash -n scripts/*.sh`와 sample gate 실행 | test pass/fail |
-| `scripts/ai-guard.sh` | `<command...>` | 금지 command pattern 검사 후 안전하면 `exec "$@"` | 금지 명령이면 `[AI_GUARD_BLOCKED]` |
+| `scripts/ai-guard.sh` | `<command...>` | 금지 command pattern과 protected path를 검사 후 안전하면 `exec "$@"` | 금지 명령이면 `[AI_GUARD_BLOCKED]`, 보호 path면 `[AI_PROTECT_BLOCKED]` |
+| `scripts/ai-protect.sh` | `<action> [args...]` | shared/local protection policy 검사와 local user-confirmed allow 관리 | 보호 path면 차단하고 allow 등록 명령 안내 |
 
 `check-sdd-docs.sh`가 보는 최소 조건:
 
@@ -503,34 +542,38 @@ flowchart TD
     SAMPLE --> END
 ```
 
-### 9.8 GitHub Helper Scripts
+### 9.9 GitHub Helper Scripts
 
 GitHub helper는 `scripts/github-lib.sh`를 공유한다.
 
 공통 동작:
 
-1. `.env` 로딩
+1. `.ai-orch/setting.local.json`, `.ai-orch/setting.json` 로딩
 2. `gh` 설치 여부 확인
 3. `gh auth token`으로 인증 확인
 4. `AI_GITHUB_ACCOUNT`가 있으면 active `gh` account와 일치하는지 확인
 5. `AI_GITHUB_REPO`가 있으면 그 값을 사용
 6. 없으면 `gh repo view`로 현재 repository 추론
 
-여러 GitHub 계정을 쓰는 경우 `.env`에 다음 값을 둔다.
+여러 GitHub 계정을 쓰는 경우 `.ai-orch/setting.local.json`에 다음 값을 둔다.
 
-```bash
-AI_GITHUB_ACCOUNT=shaul1991
-AI_GITHUB_REPO=shaul1991/ai-orch
+```json
+{
+  "AI_GITHUB_ACCOUNT": "shaul1991",
+  "AI_GITHUB_REPO": "shaul1991/ai-orch"
+}
 ```
 
 회사 repository라면 회사 계정 login과 대상 repo를 명시한다.
 
-```bash
-AI_GITHUB_ACCOUNT=atms-jihoon
-AI_GITHUB_REPO=atms-backend/example-repo
+```json
+{
+  "AI_GITHUB_ACCOUNT": "atms-jihoon",
+  "AI_GITHUB_REPO": "atms-backend/example-repo"
+}
 ```
 
-`AI_GITHUB_REPO`는 origin remote가 없을 때뿐 아니라 helper script의 대상 repo를 명시적으로 고정하고 싶을 때도 설정할 수 있다. active account가 다르면 wrapper는 실행을 멈추고 `gh auth switch --user <expected-account>`를 안내한다. GitHub access token은 local `.env`에 넣지 않고 `gh auth login`이 관리하는 OS keychain을 사용한다.
+`AI_GITHUB_REPO`는 origin remote가 없을 때뿐 아니라 helper script의 대상 repo를 명시적으로 고정하고 싶을 때도 설정할 수 있다. active account가 다르면 wrapper는 실행을 멈추고 `gh auth switch --user <expected-account>`를 안내한다. GitHub access token은 `.ai-orch/setting.local.json`에 넣지 않고 `gh auth login`이 관리하는 OS keychain을 사용한다.
 
 | Script | 입력 | 실행하는 GitHub 작업 |
 |---|---|---|
@@ -545,7 +588,7 @@ AI_GITHUB_REPO=atms-backend/example-repo
 
 `create-pr-draft.sh`는 `docs/specs/{feature}/self-review.md`가 없으면 실패한다. draft PR 본문에는 constitution, spec, requirements, plans, tasks, tests, traceability, self-review 링크가 포함된다.
 
-### 9.9 Bootstrap Script
+### 9.10 Bootstrap Script
 
 `scripts/bootstrap-ai-orch.sh`는 새 repository에 기본 skeleton을 만들기 위한 script다.
 
@@ -595,7 +638,7 @@ flowchart TD
 ```text
 Human input
 → scripts/sdd-*.sh
-→ load .env
+→ load .ai-orch settings
 → goose run
 → .goose recipe
 → Codex or Claude Code

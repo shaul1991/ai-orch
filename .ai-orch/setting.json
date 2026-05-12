@@ -1,0 +1,13 @@
+{
+  "AI_DOC_PROVIDER": "codex-acp",
+  "AI_DOC_MODEL": "gpt-5.5",
+  "AI_ARCH_PROVIDER": "claude-code",
+  "AI_ARCH_MODEL": "default",
+  "AI_CODE_PROVIDER": "claude-code",
+  "AI_CODE_MODEL": "default",
+  "AI_REVIEW_PROVIDER": "claude-code",
+  "AI_REVIEW_MODEL": "default",
+  "AI_GITHUB_BASE_BRANCH": "main",
+  "AI_GITHUB_ISSUE_LIMIT": "20",
+  "AI_GITHUB_PR_LIMIT": "20"
+}

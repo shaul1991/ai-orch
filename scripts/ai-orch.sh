@@ -21,6 +21,9 @@ Flows:
   init
       Initialize .ai-orch local state and .gitignore rules.
 
+  protect <action> [args...]
+      Check or manage protected secret/critical file access.
+
   doctor
       Check local script syntax and the sample SDD gate.
 
@@ -62,6 +65,7 @@ Flows:
 
 Examples:
   scripts/ai-orch.sh init
+  scripts/ai-orch.sh protect list
   scripts/ai-orch.sh docs "운영 정책 정리" docs/output.md
   scripts/ai-orch.sh feature login "로그인 기능"
   scripts/ai-orch.sh plan login
@@ -104,10 +108,14 @@ current_branch() {
 
 ai_orch_initialized() {
   [ -f ".ai-orch/README.md" ] &&
+    [ -f ".ai-orch/setting.json" ] &&
+    [ -f ".ai-orch/settings.example.json" ] &&
     [ -f ".gitignore" ] &&
     grep -Fxq "/.ai-orch/*" ".gitignore" &&
     grep -Fxq "!/.ai-orch/" ".gitignore" &&
-    grep -Fxq "!/.ai-orch/README.md" ".gitignore"
+    grep -Fxq "!/.ai-orch/README.md" ".gitignore" &&
+    grep -Fxq "!/.ai-orch/setting.json" ".gitignore" &&
+    grep -Fxq "!/.ai-orch/settings.example.json" ".gitignore"
 }
 
 branch_slug() {
@@ -180,6 +188,9 @@ flow_state_key() {
       ;;
     init)
       echo "INIT"
+      ;;
+    protect)
+      echo "PROTECT"
       ;;
     release-check)
       echo "RELEASE_CHECK"
@@ -282,7 +293,14 @@ artifact_links_for_flow() {
       ;;
     init)
       add_artifact ".ai-orch/README.md"
+      add_artifact ".ai-orch/setting.json"
+      add_artifact ".ai-orch/settings.example.json"
       add_artifact ".gitignore"
+      ;;
+    protect)
+      add_artifact "ai-orch.protect"
+      add_artifact ".ai-orch/protect.local"
+      add_artifact ".ai-orch/protect.allow.local"
       ;;
     feature)
       add_artifact "$base/spec.md"
@@ -562,9 +580,20 @@ print_plan() {
       cat <<'EOF_PLAN'
 1. Run scripts/ai-orch-init.sh.
 2. Create or refresh .ai-orch/README.md with the current plugin version.
-3. Ensure .gitignore ignores .ai-orch local state while keeping .ai-orch/README.md trackable.
-4. Record init completion in the current branch local state.
-5. Print the next status command.
+3. Create .ai-orch/setting.json, .ai-orch/settings.example.json, and .ai-orch/setting.local.json when missing.
+4. Create .ai-orch/protect.local template when missing.
+5. Ensure .gitignore ignores local state while keeping shared .ai-orch files trackable.
+6. Record init completion in the current branch local state.
+7. Print the next status command.
+EOF_PLAN
+      ;;
+    protect)
+      cat <<'EOF_PLAN'
+1. Run scripts/ai-protect.sh with the requested action.
+2. Load shared policy from ai-orch.protect.
+3. Load local deny policy from .ai-orch/protect.local when present.
+4. Load user-confirmed local allow policy from .ai-orch/protect.allow.local when present.
+5. Block protected access unless the path is explicitly allowed locally.
 EOF_PLAN
       ;;
     doctor)
@@ -577,7 +606,7 @@ EOF_PLAN
     docs)
       cat <<'EOF_PLAN'
 1. Run scripts/sdd-docs.sh with topic and output path.
-2. Load .env through the wrapper.
+2. Load .ai-orch/setting.local.json and .ai-orch/setting.json through the wrapper.
 3. Execute Goose with .goose/recipes/sdd-research-docs.yaml.
 4. Write the requested Markdown document.
 EOF_PLAN
@@ -684,6 +713,14 @@ run_flow() {
     init)
       print_plan "$flow"
       run_and_record "$flow" "" ".ai-orch/README.md" scripts/ai-orch-init.sh
+      ;;
+    protect)
+      print_plan "$flow"
+      if [ "$#" -eq 0 ]; then
+        scripts/ai-protect.sh list
+      else
+        scripts/ai-protect.sh "$@"
+      fi
       ;;
     doctor)
       print_plan "$flow"

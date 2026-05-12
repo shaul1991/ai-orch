@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMAND="$*"
 
 FORBIDDEN_PATTERNS=(
@@ -22,5 +23,10 @@ for pattern in "${FORBIDDEN_PATTERNS[@]}"; do
     exit 1
   fi
 done
+
+if ! PROTECT_OUTPUT="$("$SCRIPT_DIR/ai-protect.sh" check-command "$@" 2>&1)"; then
+  echo "$PROTECT_OUTPUT"
+  exit 1
+fi
 
 exec "$@"

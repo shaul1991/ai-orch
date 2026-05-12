@@ -14,7 +14,6 @@ Desktop.ini
 # Local environment and secrets
 .env
 .env.*
-!.env.example
 .direnv/
 
 # AI assistant local state
@@ -24,6 +23,8 @@ Desktop.ini
 /.ai-orch/*
 !/.ai-orch/
 !/.ai-orch/README.md
+!/.ai-orch/setting.json
+!/.ai-orch/settings.example.json
 
 # Local notes, logs, and temporary files
 /.local/

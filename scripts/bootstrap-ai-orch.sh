@@ -12,6 +12,7 @@ mkdir -p plugins/ai-orch/.codex-plugin
 mkdir -p plugins/ai-orch/commands
 mkdir -p plugins/ai-orch/skills/help
 mkdir -p plugins/ai-orch/skills/init
+mkdir -p plugins/ai-orch/skills/protect
 mkdir -p plugins/ai-orch/skills/status
 mkdir -p plugins/ai-orch/skills/docs
 mkdir -p plugins/ai-orch/skills/feature
@@ -28,8 +29,10 @@ mkdir -p scripts
 
 touch README.md
 touch AGENTS.md
-touch .env.example
+touch ai-orch.protect
 touch .ai-orch/README.md
+touch .ai-orch/setting.json
+touch .ai-orch/settings.example.json
 touch .specify/memory/constitution.md
 touch docs/ai-governance.md
 touch docs/project-settings.md
@@ -69,6 +72,7 @@ touch plugins/ai-orch/.claude-plugin/plugin.json
 touch plugins/ai-orch/.codex-plugin/plugin.json
 touch plugins/ai-orch/commands/help.md
 touch plugins/ai-orch/commands/init.md
+touch plugins/ai-orch/commands/protect.md
 touch plugins/ai-orch/commands/status.md
 touch plugins/ai-orch/commands/docs.md
 touch plugins/ai-orch/commands/feature.md
@@ -79,6 +83,7 @@ touch plugins/ai-orch/commands/review.md
 touch plugins/ai-orch/commands/pr.md
 touch plugins/ai-orch/skills/help/SKILL.md
 touch plugins/ai-orch/skills/init/SKILL.md
+touch plugins/ai-orch/skills/protect/SKILL.md
 touch plugins/ai-orch/skills/status/SKILL.md
 touch plugins/ai-orch/skills/docs/SKILL.md
 touch plugins/ai-orch/skills/feature/SKILL.md
@@ -97,6 +102,7 @@ touch scripts/check-sdd-docs.sh
 touch scripts/ai-guard.sh
 touch scripts/ai-orch.sh
 touch scripts/ai-orch-init.sh
+touch scripts/ai-protect.sh
 touch scripts/run-tests.sh
 touch scripts/create-pr-draft.sh
 touch scripts/github-lib.sh
