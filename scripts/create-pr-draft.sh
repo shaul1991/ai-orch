@@ -55,8 +55,8 @@ EOF_PR
 
 ARGS=(pr create --repo "$REPO" --draft --title "$TITLE" --body-file "$BODY_FILE")
 
-if [ -n "${GH_BASE_BRANCH:-}" ]; then
-  ARGS+=(--base "$GH_BASE_BRANCH")
+if [ -n "${AI_GITHUB_BASE_BRANCH:-}" ]; then
+  ARGS+=(--base "$AI_GITHUB_BASE_BRANCH")
 fi
 
 gh "${ARGS[@]}"

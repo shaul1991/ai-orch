@@ -199,7 +199,7 @@ gh auth switch
 이 repo에서 issue/PR 명령이 대상 repository를 찾는 방식은 두 가지다.
 
 1. git `origin` remote 사용
-2. `.env`의 `GH_REPO=owner/repo` 사용
+2. `.env`의 `AI_GITHUB_REPO=owner/repo` 사용
 
 현재 repo에 remote가 있는지 확인:
 
@@ -210,10 +210,10 @@ git remote -v
 remote가 없다면 `.env`에 `GH_REPO`를 설정한다.
 
 ```bash
-GH_REPO=owner/shaul-ai-orch
-GH_BASE_BRANCH=main
-GH_ISSUE_LIMIT=20
-GH_PR_LIMIT=20
+AI_GITHUB_REPO=owner/shaul-ai-orch
+AI_GITHUB_BASE_BRANCH=main
+AI_GITHUB_ISSUE_LIMIT=20
+AI_GITHUB_PR_LIMIT=20
 ```
 
 GitHub 연결 확인:
@@ -261,9 +261,9 @@ AI_CODE_MODEL=gpt-5.5
 AI_DOC_PROVIDER=claude-code
 AI_DOC_MODEL=default
 
-GH_BASE_BRANCH=main
-GH_ISSUE_LIMIT=20
-GH_PR_LIMIT=20
+AI_GITHUB_BASE_BRANCH=main
+AI_GITHUB_ISSUE_LIMIT=20
+AI_GITHUB_PR_LIMIT=20
 ```
 
 shell에서 직접 넘긴 값이 `.env`보다 우선한다.
@@ -455,7 +455,7 @@ scripts/create-pr-draft.sh sample-feature
 
 ## GitHub issue/PR 관리
 
-GitHub 명령은 `gh`를 직접 사용해도 되고, repo wrapper script를 사용해도 된다. wrapper script는 `.env`를 자동으로 읽고 `GH_REPO` 또는 git `origin` remote를 기준으로 대상 repository를 결정한다.
+GitHub 명령은 `gh`를 직접 사용해도 되고, repo wrapper script를 사용해도 된다. wrapper script는 `.env`를 자동으로 읽고 `AI_GITHUB_REPO` 또는 git `origin` remote를 기준으로 대상 repository를 결정한다.
 
 상태 확인:
 
@@ -606,7 +606,7 @@ git remote add origin https://github.com/<owner>/<repo>.git
 또는 `.env`:
 
 ```bash
-GH_REPO=<owner>/<repo>
+AI_GITHUB_REPO=<owner>/<repo>
 ```
 
 여러 계정이 있고 active account가 다르면:

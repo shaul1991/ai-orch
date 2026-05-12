@@ -10,8 +10,12 @@ echo "[GITHUB] gh version:"
 gh --version | head -n 1
 
 echo
-echo "[GITHUB] auth status:"
-gh auth status
+echo "[GITHUB] auth:"
+if login="$(gh api user --jq .login 2>/dev/null)"; then
+  echo "Authenticated as: $login"
+else
+  echo "Authenticated token found, but GitHub API user lookup failed."
+fi
 
 echo
 echo "[GITHUB] repository:"
