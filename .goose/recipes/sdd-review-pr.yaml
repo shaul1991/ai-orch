@@ -8,7 +8,7 @@ parameters:
     requirement: required
     description: "Feature directory name under docs/specs"
 
-instructions: |
+prompt: |
   You are working under Human-Governed SDD.
 
   Project defaults:

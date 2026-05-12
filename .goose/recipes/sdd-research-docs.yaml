@@ -12,7 +12,7 @@ parameters:
     requirement: required
     description: "Output markdown file path"
 
-instructions: |
+prompt: |
   You are working under Human-Governed SDD.
 
   Project defaults:

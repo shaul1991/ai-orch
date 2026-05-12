@@ -10,9 +10,10 @@ parameters:
   - key: description
     input_type: string
     requirement: optional
+    default: ""
     description: "Feature description or source prompt"
 
-instructions: |
+prompt: |
   You are working under Human-Governed SDD with Spec Kit-compatible artifacts.
 
   Project defaults:
