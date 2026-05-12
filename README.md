@@ -35,9 +35,11 @@ AI_DOC_PROVIDER=claude-code AI_DOC_MODEL=default scripts/sdd-docs.sh "topic" doc
 ## 구성 요소
 
 - `AGENTS.md`: repo 전체 agent 규칙
+- `.specify/memory/constitution.md`: `spec-kit` 호환 project constitution
 - `docs/ai-governance.md`: 사람/AI 권한 경계와 금지 규칙
 - `docs/project-settings.md`: 한글 사용 및 Codex/Claude Code 역할 분담
 - `docs/workflow.md`: SDD 작업 흐름
+- `docs/sdd-spec-kit-adoption.md`: `spec-kit` 도입 기준
 - `docs/specs/sample-feature/`: 샘플 SDD 문서
 - `.goose/recipes/`: goose recipe
 - `.opencode/`: oh-my-openagent/OpenCode 설정 및 skill
@@ -284,6 +286,39 @@ scripts/sdd-docs.sh "Human-Governed SDD 운영 정책 정리" docs/research/sdd-
 
 이 작업은 source code를 수정하지 않는 문서/분석 작업에 사용한다.
 
+### SDD specify 단계
+
+Codex를 기본으로 사용한다.
+
+```bash
+scripts/sdd-specify.sh your-feature-name "기능 설명"
+```
+
+실행 내용:
+
+- `spec.md` 초안 작성
+- `requirements.md` 초안 작성
+- `acceptance-criteria.md` 초안 작성
+- `clarifications.md`에 human decision point 기록
+- 사람 승인 대기
+
+AI는 `Human Approved` 상태를 직접 부여하지 않는다.
+
+### SDD clarify 단계
+
+Codex를 기본으로 사용한다.
+
+```bash
+scripts/sdd-clarify.sh your-feature-name
+```
+
+실행 내용:
+
+- 요구사항, acceptance criteria, spec의 모호성 확인
+- domain/business/security/authorization 결정 누락 확인
+- `clarifications.md` 업데이트
+- 필요한 경우 `[HUMAN_DECISION_REQUIRED]`로 중단
+
 ### SDD 계획 단계
 
 Claude Code를 기본으로 사용한다.
@@ -297,9 +332,25 @@ scripts/sdd-plan.sh sample-feature
 - 요구사항과 acceptance criteria 읽기
 - 관련 코드 구조 분석
 - `technical-plan.md` 작성
+- `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md` 작성
 - `tasks.md` 작성
 - `test-plan.md` 작성
+- `traceability.md` 작성
 - 사람 검토 대기
+
+### SDD analyze 단계
+
+Claude Code를 기본으로 사용한다.
+
+```bash
+scripts/sdd-analyze.sh sample-feature
+```
+
+실행 내용:
+
+- 요구사항, acceptance criteria, plan, tasks, test plan, traceability 일관성 확인
+- 구현 전 readiness를 `analysis.md`와 `checklist.md`로 기록
+- blocker가 있으면 구현 전 중단
 
 ### SDD 구현 단계
 
@@ -332,11 +383,22 @@ scripts/sdd-review-pr.sh sample-feature
 ```bash
 FEATURE="your-feature-name"
 mkdir -p "docs/specs/$FEATURE"
+mkdir -p "docs/specs/$FEATURE/contracts"
+cp docs/specs/sample-feature/spec.md "docs/specs/$FEATURE/spec.md"
 cp docs/specs/sample-feature/requirements.md "docs/specs/$FEATURE/requirements.md"
 cp docs/specs/sample-feature/acceptance-criteria.md "docs/specs/$FEATURE/acceptance-criteria.md"
+cp docs/specs/sample-feature/clarifications.md "docs/specs/$FEATURE/clarifications.md"
 cp docs/specs/sample-feature/technical-plan.md "docs/specs/$FEATURE/technical-plan.md"
+cp docs/specs/sample-feature/plan.md "docs/specs/$FEATURE/plan.md"
+cp docs/specs/sample-feature/research.md "docs/specs/$FEATURE/research.md"
+cp docs/specs/sample-feature/data-model.md "docs/specs/$FEATURE/data-model.md"
+cp docs/specs/sample-feature/contracts/README.md "docs/specs/$FEATURE/contracts/README.md"
+cp docs/specs/sample-feature/quickstart.md "docs/specs/$FEATURE/quickstart.md"
 cp docs/specs/sample-feature/tasks.md "docs/specs/$FEATURE/tasks.md"
 cp docs/specs/sample-feature/test-plan.md "docs/specs/$FEATURE/test-plan.md"
+cp docs/specs/sample-feature/traceability.md "docs/specs/$FEATURE/traceability.md"
+cp docs/specs/sample-feature/analysis.md "docs/specs/$FEATURE/analysis.md"
+cp docs/specs/sample-feature/checklist.md "docs/specs/$FEATURE/checklist.md"
 cp docs/specs/sample-feature/self-review.md "docs/specs/$FEATURE/self-review.md"
 ```
 
@@ -358,7 +420,10 @@ Human Approved
 그 다음:
 
 ```bash
+scripts/sdd-clarify.sh "$FEATURE"
 scripts/sdd-plan.sh "$FEATURE"
+scripts/sdd-analyze.sh "$FEATURE"
+scripts/check-sdd-docs.sh "$FEATURE"
 scripts/sdd-implement.sh "$FEATURE"
 scripts/sdd-review-pr.sh "$FEATURE"
 ```
@@ -418,6 +483,15 @@ SDD 문서 승인 확인:
 scripts/check-sdd-docs.sh sample-feature
 ```
 
+검증 항목:
+
+- `.specify/memory/constitution.md` 존재
+- 필수 feature 문서 존재
+- `requirements.md`, `acceptance-criteria.md`의 `Human Approved` 상태
+- 미해결 clarification marker 부재
+- `tasks.md`의 task ID와 대상 경로
+- `traceability.md`의 requirement-task-test 연결
+
 위험 명령 차단 wrapper:
 
 ```bash
@@ -431,6 +505,7 @@ scripts/run-tests.sh
 ```
 
 실제 프로젝트에 적용할 때는 `scripts/run-tests.sh`를 기술 스택에 맞게 수정한다.
+또는 `AI_TEST_COMMANDS`에 줄 단위 명령을 지정할 수 있다.
 
 예:
 
@@ -445,6 +520,12 @@ php artisan test
 
 # Kotlin / Spring
 ./gradlew test
+```
+
+환경 변수 사용 예:
+
+```bash
+AI_TEST_COMMANDS=$'pnpm lint\npnpm test\npnpm typecheck' scripts/run-tests.sh
 ```
 
 Draft PR:

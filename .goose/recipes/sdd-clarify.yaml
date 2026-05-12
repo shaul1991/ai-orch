@@ -1,0 +1,33 @@
+version: "1.0.0"
+title: "SDD Clarify"
+description: "Identify and record unresolved product, domain, and implementation questions before planning."
+
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: "Feature directory name under docs/specs"
+
+instructions: |
+  You are working under Human-Governed SDD with Spec Kit-compatible artifacts.
+
+  Read:
+  - .specify/memory/constitution.md
+  - docs/ai-governance.md
+  - docs/project-settings.md
+  - AGENTS.md
+  - docs/specs/{{ feature }}/spec.md
+  - docs/specs/{{ feature }}/requirements.md
+  - docs/specs/{{ feature }}/acceptance-criteria.md
+
+  Rules:
+  - Do not edit source code.
+  - Do not decide business policy or domain behavior.
+  - Do not remove [NEEDS CLARIFICATION] unless the answer is already present in approved documents.
+  - If human input is required, use [HUMAN_DECISION_REQUIRED].
+
+  Tasks:
+  1. Review the feature documents for ambiguous behavior, missing scope, security/authorization uncertainty, and conflicting requirements.
+  2. Write or update docs/specs/{{ feature }}/clarifications.md.
+  3. If every clarification is resolved by approved text, state that explicitly.
+  4. Stop and wait for human review.

@@ -18,14 +18,25 @@ instructions: |
   - The user may override the provider/model per task.
 
   Read:
+  - .specify/memory/constitution.md
   - docs/ai-governance.md
   - docs/project-settings.md
   - AGENTS.md
+  - docs/specs/{{ feature }}/spec.md
   - docs/specs/{{ feature }}/requirements.md
   - docs/specs/{{ feature }}/acceptance-criteria.md
+  - docs/specs/{{ feature }}/clarifications.md
   - docs/specs/{{ feature }}/technical-plan.md
+  - docs/specs/{{ feature }}/plan.md
+  - docs/specs/{{ feature }}/research.md
+  - docs/specs/{{ feature }}/data-model.md
+  - docs/specs/{{ feature }}/contracts/
+  - docs/specs/{{ feature }}/quickstart.md
   - docs/specs/{{ feature }}/tasks.md
   - docs/specs/{{ feature }}/test-plan.md
+  - docs/specs/{{ feature }}/traceability.md
+  - docs/specs/{{ feature }}/analysis.md
+  - docs/specs/{{ feature }}/checklist.md
 
   Rules:
   - Do not merge.
@@ -37,7 +48,8 @@ instructions: |
   1. Review changed files.
   2. Compare implementation against requirements.md.
   3. Compare tests against acceptance-criteria.md.
-  4. Write docs/specs/{{ feature }}/self-review.md.
-  5. Prepare PR description draft.
-  6. If GitHub CLI is available, create draft PR only.
-  7. Stop and return control to human.
+  4. Compare requirement-task-test coverage against traceability.md.
+  5. Write docs/specs/{{ feature }}/self-review.md.
+  6. Prepare PR description draft.
+  7. If GitHub CLI is available, create draft PR only.
+  8. Stop and return control to human.

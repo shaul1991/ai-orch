@@ -20,19 +20,32 @@ instructions: |
   scripts/check-sdd-docs.sh {{ feature }}
 
   Read:
+  - .specify/memory/constitution.md
   - docs/ai-governance.md
   - docs/project-settings.md
   - AGENTS.md
+  - docs/specs/{{ feature }}/spec.md
   - docs/specs/{{ feature }}/requirements.md
   - docs/specs/{{ feature }}/acceptance-criteria.md
+  - docs/specs/{{ feature }}/clarifications.md
   - docs/specs/{{ feature }}/technical-plan.md
+  - docs/specs/{{ feature }}/plan.md
+  - docs/specs/{{ feature }}/research.md
+  - docs/specs/{{ feature }}/data-model.md
+  - docs/specs/{{ feature }}/contracts/
+  - docs/specs/{{ feature }}/quickstart.md
   - docs/specs/{{ feature }}/tasks.md
   - docs/specs/{{ feature }}/test-plan.md
+  - docs/specs/{{ feature }}/traceability.md
+  - docs/specs/{{ feature }}/analysis.md
+  - docs/specs/{{ feature }}/checklist.md
 
   Rules:
   - Implement only tasks listed in tasks.md.
   - Do not add features outside approved scope.
   - Do not change business policy.
+  - Do not implement while [NEEDS CLARIFICATION] remains.
+  - Keep implementation aligned with traceability.md.
   - Do not merge.
   - Do not deploy.
   - If ambiguity appears, stop and write HUMAN_DECISION_REQUIRED.

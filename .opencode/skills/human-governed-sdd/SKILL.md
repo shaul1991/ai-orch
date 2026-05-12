@@ -28,23 +28,35 @@ AI owns:
 
 Before implementation, confirm these files exist:
 
+- `.specify/memory/constitution.md`
+- `docs/specs/{feature}/spec.md`
 - `docs/specs/{feature}/requirements.md`
 - `docs/specs/{feature}/acceptance-criteria.md`
+- `docs/specs/{feature}/clarifications.md`
 - `docs/specs/{feature}/technical-plan.md`
+- `docs/specs/{feature}/plan.md`
+- `docs/specs/{feature}/research.md`
+- `docs/specs/{feature}/data-model.md`
+- `docs/specs/{feature}/contracts/`
+- `docs/specs/{feature}/quickstart.md`
 - `docs/specs/{feature}/tasks.md`
 - `docs/specs/{feature}/test-plan.md`
+- `docs/specs/{feature}/traceability.md`
+- `docs/specs/{feature}/analysis.md`
+- `docs/specs/{feature}/checklist.md`
 
 ## Required Behavior
 
 1. Read approved requirements.
 2. Check for business ambiguity.
 3. If ambiguity exists, stop.
-4. Implement only approved tasks.
-5. Write or update tests.
-6. Run tests.
-7. Create `self-review.md`.
-8. Prepare PR draft.
-9. Stop.
+4. Verify `scripts/check-sdd-docs.sh {feature}` passes.
+5. Implement only approved tasks.
+6. Write or update tests.
+7. Run tests.
+8. Create `self-review.md`.
+9. Prepare PR draft.
+10. Stop.
 
 ## Forbidden
 

@@ -1,0 +1,41 @@
+version: "1.0.0"
+title: "SDD Specify"
+description: "Draft or refine feature specification documents without approving business decisions."
+
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: "Feature directory name under docs/specs"
+  - key: description
+    input_type: string
+    requirement: optional
+    description: "Feature description or source prompt"
+
+instructions: |
+  You are working under Human-Governed SDD with Spec Kit-compatible artifacts.
+
+  Project defaults:
+  - Use Korean as the primary language.
+  - Codex is the default agent for documentation and non-code analysis.
+  - Human owns domain and business decisions.
+
+  Read:
+  - .specify/memory/constitution.md
+  - docs/ai-governance.md
+  - docs/project-settings.md
+  - AGENTS.md
+
+  Rules:
+  - Do not edit source code.
+  - Do not mark requirements or acceptance criteria as Human Approved.
+  - If business or domain details are missing, write [NEEDS CLARIFICATION] in the relevant document.
+  - Keep code identifiers, commands, file paths, API names, and proper nouns in their original language.
+
+  Tasks:
+  1. Create docs/specs/{{ feature }}/ if it does not exist.
+  2. Draft or update docs/specs/{{ feature }}/spec.md from this input: {{ description }}.
+  3. Draft or update docs/specs/{{ feature }}/requirements.md.
+  4. Draft or update docs/specs/{{ feature }}/acceptance-criteria.md.
+  5. Draft docs/specs/{{ feature }}/clarifications.md with explicit human decision questions.
+  6. Stop and wait for human approval.

@@ -10,13 +10,14 @@ Check:
 
 1. Requirement coverage
 2. Acceptance criteria coverage
-3. Test coverage
-4. Regression risk
-5. Security impact
-6. Performance impact
-7. Data model impact
-8. API contract impact
-9. Human decision points
+3. Traceability coverage
+4. Test coverage
+5. Regression risk
+6. Security impact
+7. Performance impact
+8. Data model impact
+9. API contract impact
+10. Human decision points
 
 ## Required Output
 
@@ -28,6 +29,7 @@ The review must include:
 
 - Requirement coverage table
 - Acceptance criteria coverage table
+- Traceability coverage table
 - Changed files
 - Test results
 - Risks

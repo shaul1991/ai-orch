@@ -36,11 +36,22 @@ This PR was prepared under Human-Governed SDD.
 
 ## SDD Documents
 
+- Constitution: \`.specify/memory/constitution.md\`
+- Spec: \`$BASE/spec.md\`
 - Requirements: \`$BASE/requirements.md\`
 - Acceptance Criteria: \`$BASE/acceptance-criteria.md\`
+- Clarifications: \`$BASE/clarifications.md\`
 - Technical Plan: \`$BASE/technical-plan.md\`
+- Spec Kit Plan: \`$BASE/plan.md\`
+- Research: \`$BASE/research.md\`
+- Data Model: \`$BASE/data-model.md\`
+- Contracts: \`$BASE/contracts/\`
+- Quickstart: \`$BASE/quickstart.md\`
 - Tasks: \`$BASE/tasks.md\`
 - Test Plan: \`$BASE/test-plan.md\`
+- Traceability: \`$BASE/traceability.md\`
+- Analysis: \`$BASE/analysis.md\`
+- Checklist: \`$BASE/checklist.md\`
 - Self Review: \`$BASE/self-review.md\`
 
 ## Human Review Required

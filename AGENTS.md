@@ -36,21 +36,36 @@ Default override variables:
 
 Before any implementation, read:
 
-1. `docs/ai-governance.md`
-2. `docs/project-settings.md`
-3. `docs/specs/{feature}/requirements.md`
-4. `docs/specs/{feature}/acceptance-criteria.md`
-5. Existing code related to the requested change
+1. `.specify/memory/constitution.md`
+2. `docs/ai-governance.md`
+3. `docs/project-settings.md`
+4. `docs/specs/{feature}/spec.md`
+5. `docs/specs/{feature}/requirements.md`
+6. `docs/specs/{feature}/acceptance-criteria.md`
+7. `docs/specs/{feature}/clarifications.md`
+8. Existing code related to the requested change
 
 ## Implementation Gate
 
 Do not modify source code unless all of these exist:
 
+- `spec.md`
 - `requirements.md`
 - `acceptance-criteria.md`
+- `clarifications.md`
 - `technical-plan.md`
+- `plan.md`
+- `research.md`
+- `data-model.md`
+- `contracts/`
+- `quickstart.md`
 - `tasks.md`
 - `test-plan.md`
+- `traceability.md`
+- `analysis.md`
+- `checklist.md`
+
+`requirements.md` and `acceptance-criteria.md` must contain `Human Approved`.
 
 ## Stop Conditions
 
@@ -59,6 +74,7 @@ Stop immediately when:
 - Business rule is missing
 - Domain behavior is ambiguous
 - Requirement conflicts with existing behavior
+- Feature documents contain unresolved clarification markers
 - Security or authorization policy is unclear
 - Payment, pricing, user permission, or customer-facing policy is affected
 - PR draft is created

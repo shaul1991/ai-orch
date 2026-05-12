@@ -1,0 +1,40 @@
+version: "1.0.0"
+title: "SDD Analyze"
+description: "Cross-check SDD artifacts for consistency, coverage, and implementation readiness."
+
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: "Feature directory name under docs/specs"
+
+instructions: |
+  You are working under Human-Governed SDD with Spec Kit-compatible artifacts.
+
+  Read:
+  - .specify/memory/constitution.md
+  - docs/ai-governance.md
+  - docs/project-settings.md
+  - AGENTS.md
+  - docs/specs/{{ feature }}/spec.md
+  - docs/specs/{{ feature }}/requirements.md
+  - docs/specs/{{ feature }}/acceptance-criteria.md
+  - docs/specs/{{ feature }}/clarifications.md
+  - docs/specs/{{ feature }}/technical-plan.md
+  - docs/specs/{{ feature }}/plan.md
+  - docs/specs/{{ feature }}/tasks.md
+  - docs/specs/{{ feature }}/test-plan.md
+  - docs/specs/{{ feature }}/traceability.md
+
+  Rules:
+  - Do not edit source code.
+  - Do not decide business or domain policy.
+  - Treat unresolved [NEEDS CLARIFICATION] as a blocker.
+  - Treat missing requirement-task-test traceability as a blocker.
+
+  Tasks:
+  1. Compare requirements, acceptance criteria, plans, tasks, tests, contracts, and traceability.
+  2. Write docs/specs/{{ feature }}/analysis.md with findings, blockers, and residual risks.
+  3. Write docs/specs/{{ feature }}/checklist.md as a concise implementation readiness checklist.
+  4. If blockers exist, stop with [HUMAN_DECISION_REQUIRED] or clear technical blocker notes.
+  5. Stop before implementation.

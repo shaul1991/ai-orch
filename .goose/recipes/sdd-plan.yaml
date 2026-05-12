@@ -17,22 +17,32 @@ instructions: |
   - The user may override the provider/model per task.
 
   Read:
+  - .specify/memory/constitution.md
   - docs/ai-governance.md
   - docs/project-settings.md
   - AGENTS.md
+  - docs/specs/{{ feature }}/spec.md
   - docs/specs/{{ feature }}/requirements.md
   - docs/specs/{{ feature }}/acceptance-criteria.md
+  - docs/specs/{{ feature }}/clarifications.md
 
   Rules:
   - Human owns domain and business decisions.
   - AI must not decide missing business rules.
   - If domain ambiguity exists, stop and write HUMAN_DECISION_REQUIRED.
   - Do not edit source code in this phase.
+  - Do not remove [NEEDS CLARIFICATION] unless it is resolved by approved documents.
 
   Tasks:
   1. Analyze the repository structure.
   2. Identify files or modules that would be relevant to this feature.
   3. Write docs/specs/{{ feature }}/technical-plan.md.
-  4. Write docs/specs/{{ feature }}/tasks.md.
-  5. Write docs/specs/{{ feature }}/test-plan.md.
-  6. Stop and wait for human review.
+  4. Write docs/specs/{{ feature }}/plan.md using Spec Kit-compatible sections.
+  5. Write docs/specs/{{ feature }}/research.md.
+  6. Write docs/specs/{{ feature }}/data-model.md.
+  7. Write or update docs/specs/{{ feature }}/contracts/.
+  8. Write docs/specs/{{ feature }}/quickstart.md.
+  9. Write docs/specs/{{ feature }}/tasks.md with task IDs and exact file paths.
+  10. Write docs/specs/{{ feature }}/test-plan.md.
+  11. Write docs/specs/{{ feature }}/traceability.md.
+  12. Stop and wait for human review.
