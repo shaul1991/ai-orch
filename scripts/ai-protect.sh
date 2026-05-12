@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-SHARED_POLICY="$PROJECT_ROOT/ai-orch.protect"
-LOCAL_DENY_POLICY="$PROJECT_ROOT/.ai-orch/protect.local"
-LOCAL_ALLOW_POLICY="$PROJECT_ROOT/.ai-orch/protect.allow.local"
+SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
+TARGET_REPO="$(pwd -P)"
+SHARED_POLICY="$TARGET_REPO/ai-orch.protect"
+LOCAL_DENY_POLICY="$TARGET_REPO/.ai-orch/protect.local"
+LOCAL_ALLOW_POLICY="$TARGET_REPO/.ai-orch/protect.allow.local"
 
 if [ "${AI_PROTECT_IGNORE_LOCAL:-}" = "1" ]; then
   LOCAL_DENY_POLICY=""
@@ -45,11 +46,11 @@ normalize_path() {
   path="${path%\'}"
 
   case "$path" in
-    "$PROJECT_ROOT")
+    "$TARGET_REPO")
       path="."
       ;;
-    "$PROJECT_ROOT"/*)
-      path="${path#"$PROJECT_ROOT"/}"
+    "$TARGET_REPO"/*)
+      path="${path#"$TARGET_REPO"/}"
       ;;
   esac
 
