@@ -190,6 +190,7 @@ scripts/ai-orch.sh explain implement new-feature
 Claude Code/Codex native command plugin을 활성화했다면 같은 flow를 command hinting으로 선택할 수 있다.
 
 ```text
+/ai-orch:help
 /ai-orch:docs <topic> <output-markdown-path>
 /ai-orch:feature new-feature "새 기능 설명"
 /ai-orch:plan new-feature
@@ -318,13 +319,13 @@ goose run \
 
 ### 9.3 Native Command Plugin
 
-`plugins/ai-orch/`는 Claude Code와 Codex에서 command hinting을 제공하기 위한 repo-local plugin이다.
+`plugins/ai-orch/`는 Claude Code와 Codex에서 command hinting을 제공하기 위한 repo-local plugin이다. Claude Code는 `commands/`를 사용하고, Codex는 `skills/`를 사용해 같은 `/ai-orch:*` UX를 노출한다.
 
 ```mermaid
 flowchart LR
     H[Human] --> SLASH["/ai-orch:* command"]
-    SLASH --> CMDMD["plugins/ai-orch/commands/*.md"]
-    CMDMD --> ORCH["scripts/ai-orch.sh <flow>"]
+    SLASH --> SURFACE["commands/*.md<br/>skills/*/SKILL.md"]
+    SURFACE --> ORCH["scripts/ai-orch.sh <flow>"]
     ORCH --> SDD["scripts/sdd-*.sh / guard / test / PR helper"]
     SDD --> GOOSE["goose run / gh CLI / local checks"]
 ```
@@ -337,11 +338,13 @@ Marketplace/manifest:
 | Claude Code | `plugins/ai-orch/.claude-plugin/plugin.json` | plugin metadata |
 | Codex | `.agents/plugins/marketplace.json` | repo-local marketplace 등록 |
 | Codex | `plugins/ai-orch/.codex-plugin/plugin.json` | plugin metadata와 UI metadata |
+| Codex | `plugins/ai-orch/skills/*/SKILL.md` | command hinting용 skill surface |
 
 1차 command set:
 
 | Native command | 위임되는 shell flow | 목적 |
 |---|---|---|
+| `/ai-orch:help` | `scripts/ai-orch.sh help` | 사용 가능한 flow와 예시 출력 |
 | `/ai-orch:docs <topic> <output>` | `scripts/ai-orch.sh docs <topic> <output>` | 문서/리서치 작성 |
 | `/ai-orch:feature <feature> [description]` | `scripts/ai-orch.sh feature <feature> [description]` | 새 feature SDD 초안 작성 |
 | `/ai-orch:plan <feature>` | `scripts/ai-orch.sh plan <feature>` | 기술 계획과 task/test plan 작성 |
@@ -358,7 +361,7 @@ claude plugin install -s project ai-orch@ai-orch
 codex plugin marketplace add shaul1991/ai-orch
 ```
 
-Codex CLI는 marketplace 등록까지만 명령으로 제공한다. command hinting은 Codex의 plugin 설치/활성화 UI 또는 session plugin 선택에서 `ai-orch`를 활성화한 뒤 확인한다.
+Codex는 plugin skill을 통해 command hinting을 제공한다. 설치 후 plugin 상세에 `Skills`가 표시되어야 한다.
 
 Claude Code prompt 안에서는 다음 slash command로도 설치할 수 있다.
 
@@ -461,8 +464,25 @@ GitHub helper는 `scripts/github-lib.sh`를 공유한다.
 1. `.env` 로딩
 2. `gh` 설치 여부 확인
 3. `gh auth token`으로 인증 확인
-4. `AI_GITHUB_REPO`가 있으면 그 값을 사용
-5. 없으면 `gh repo view`로 현재 repository 추론
+4. `AI_GITHUB_ACCOUNT`가 있으면 active `gh` account와 일치하는지 확인
+5. `AI_GITHUB_REPO`가 있으면 그 값을 사용
+6. 없으면 `gh repo view`로 현재 repository 추론
+
+여러 GitHub 계정을 쓰는 경우 `.env`에 다음 값을 둔다.
+
+```bash
+AI_GITHUB_ACCOUNT=shaul1991
+AI_GITHUB_REPO=shaul1991/ai-orch
+```
+
+회사 repository라면 회사 계정 login과 대상 repo를 명시한다.
+
+```bash
+AI_GITHUB_ACCOUNT=atms-jihoon
+AI_GITHUB_REPO=atms-backend/example-repo
+```
+
+`AI_GITHUB_REPO`는 origin remote가 없을 때뿐 아니라 helper script의 대상 repo를 명시적으로 고정하고 싶을 때도 설정할 수 있다. active account가 다르면 wrapper는 실행을 멈추고 `gh auth switch --user <expected-account>`를 안내한다. GitHub access token은 local `.env`에 넣지 않고 `gh auth login`이 관리하는 OS keychain을 사용한다.
 
 | Script | 입력 | 실행하는 GitHub 작업 |
 |---|---|---|
@@ -486,6 +506,7 @@ GitHub helper는 `scripts/github-lib.sh`를 공유한다.
 - `docs/specs/sample-feature/`와 `contracts/` 생성
 - `.specify/memory/`, `.goose/recipes/`, `.opencode/skills/`, `scripts/` 생성
 - `.claude-plugin/`, `.agents/plugins/`, `plugins/ai-orch/commands/` 생성
+- `plugins/ai-orch/skills/` 생성
 - 필수 문서와 recipe, script 파일을 `touch`
 - `scripts/*.sh`에 execute permission 부여
 

@@ -52,7 +52,7 @@ AI_DOC_PROVIDER=claude-code AI_DOC_MODEL=default scripts/sdd-docs.sh "topic" doc
 
 ## Native command와 통합 entrypoint
 
-Claude Code나 Codex의 command hinting을 사용하려면 repo-local `ai-orch` plugin을 등록한다. 이 plugin은 SDD 로직을 직접 구현하지 않고, command를 `scripts/ai-orch.sh` flow로 위임한다.
+Claude Code나 Codex의 command hinting을 사용하려면 repo-local `ai-orch` plugin을 등록한다. 이 plugin은 SDD 로직을 직접 구현하지 않고, command/skill을 `scripts/ai-orch.sh` flow로 위임한다.
 
 Claude Code 안에서:
 
@@ -74,13 +74,14 @@ Codex:
 codex plugin marketplace add shaul1991/ai-orch
 ```
 
-Codex CLI는 marketplace 등록 명령을 제공한다. 실제 command hinting은 Codex의 plugin 설치/활성화 UI 또는 session plugin 선택에서 `ai-orch`를 활성화한 뒤 확인한다.
+Codex는 plugin skill을 통해 같은 `/ai-orch:*` hinting을 노출한다. 설치 후 plugin 상세에 `Skills`가 표시되어야 한다.
 
 local clone을 직접 등록할 때는 repo root에서 `claude plugin marketplace add .` 또는 `codex plugin marketplace add .`를 실행한다.
 
 활성화 후 1차 command set:
 
 ```text
+/ai-orch:help
 /ai-orch:docs <topic> <output-markdown-path>
 /ai-orch:feature <feature> [description]
 /ai-orch:plan <feature>
@@ -255,10 +256,12 @@ gh auth status
 gh auth status
 ```
 
-필요하면 계정을 전환한다.
+필요하면 계정을 전환한다. 개인 repo와 회사 repo를 오가는 경우 이 단계를 명시적으로 수행한다.
 
 ```bash
-gh auth switch
+gh auth switch --user shaul1991
+# 또는
+gh auth switch --user atms-jihoon
 ```
 
 이 repo에서 issue/PR 명령이 대상 repository를 찾는 방식은 두 가지다.
@@ -272,14 +275,17 @@ gh auth switch
 git remote -v
 ```
 
-remote가 없다면 `.env`에 `GH_REPO`를 설정한다.
+remote가 없거나 helper script의 대상 repo를 명시적으로 고정하려면 `.env`에 `AI_GITHUB_REPO`를 설정한다. 여러 GitHub 계정을 쓴다면 `AI_GITHUB_ACCOUNT`도 함께 설정한다. wrapper script는 active `gh` 계정이 `AI_GITHUB_ACCOUNT`와 다르면 실패하고 전환 명령을 안내한다.
 
 ```bash
-AI_GITHUB_REPO=owner/ai-orch
+AI_GITHUB_ACCOUNT=shaul1991
+AI_GITHUB_REPO=shaul1991/ai-orch
 AI_GITHUB_BASE_BRANCH=main
 AI_GITHUB_ISSUE_LIMIT=20
 AI_GITHUB_PR_LIMIT=20
 ```
+
+local 개발에서는 GitHub access token을 `.env`에 넣지 않는다. `gh auth login`과 `gh auth switch`를 사용하면 token은 OS keychain에 저장되고, `.env`에는 repo/account 같은 비밀이 아닌 설정만 남는다.
 
 GitHub 연결 확인:
 
@@ -601,6 +607,26 @@ scripts/create-pr-draft.sh sample-feature
 
 GitHub 명령은 `gh`를 직접 사용해도 되고, repo wrapper script를 사용해도 된다. wrapper script는 `.env`를 자동으로 읽고 `AI_GITHUB_REPO` 또는 git `origin` remote를 기준으로 대상 repository를 결정한다.
 
+여러 GitHub 계정을 쓰는 환경에서는 `.env`에 `AI_GITHUB_ACCOUNT`를 지정한다.
+
+```bash
+AI_GITHUB_ACCOUNT=shaul1991
+AI_GITHUB_REPO=shaul1991/ai-orch
+```
+
+회사 계정으로 작업하는 repository라면 해당 login을 지정한다.
+
+```bash
+AI_GITHUB_ACCOUNT=atms-jihoon
+AI_GITHUB_REPO=atms-backend/example-repo
+```
+
+wrapper script는 `gh auth status`로 active account를 확인한다. 값이 다르면 GitHub 작업을 실행하지 않고 다음 형태의 전환 명령을 안내한다.
+
+```bash
+gh auth switch --user <expected-account>
+```
+
 상태 확인:
 
 ```bash
@@ -750,13 +776,14 @@ git remote add origin https://github.com/<owner>/<repo>.git
 또는 `.env`:
 
 ```bash
+AI_GITHUB_ACCOUNT=<github-login>
 AI_GITHUB_REPO=<owner>/<repo>
 ```
 
 여러 계정이 있고 active account가 다르면:
 
 ```bash
-gh auth switch
+gh auth switch --user <github-login>
 ```
 
 ### recipe 렌더링 확인

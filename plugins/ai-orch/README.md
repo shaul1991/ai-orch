@@ -2,10 +2,11 @@
 
 `ai-orch`용 repo-local command plugin이다.
 
-이 plugin은 Claude Code/Codex native command를 노출하고, 실제 실행은 `scripts/ai-orch.sh`로 위임한다.
+이 plugin은 Claude Code/Codex native command UX를 노출하고, 실제 실행은 `scripts/ai-orch.sh`로 위임한다. Claude Code는 `commands/`를 사용하고, Codex는 `skills/`를 사용한다.
 
 ## Commands
 
+- `/ai-orch:help`
 - `/ai-orch:docs <topic> <output-markdown-path>`
 - `/ai-orch:feature <feature> [description]`
 - `/ai-orch:plan <feature>`
@@ -36,7 +37,7 @@ Codex:
 codex plugin marketplace add shaul1991/ai-orch
 ```
 
-Codex CLI는 marketplace 등록 명령만 제공한다. command hinting은 Codex의 plugin 설치/활성화 UI 또는 session plugin 선택에서 `ai-orch`를 활성화한 뒤 확인한다.
+Codex는 plugin skill을 통해 같은 `/ai-orch:*` hinting을 노출한다. 설치 후 plugin 상세에 `Skills`가 표시되어야 한다.
 
 local clone을 직접 등록할 때는 repo root에서 `claude plugin marketplace add .` 또는 `codex plugin marketplace add .`를 실행한다.
 

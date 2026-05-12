@@ -17,6 +17,11 @@ Desktop.ini
 !.env.example
 .direnv/
 
+# AI assistant local state
+# Keep .claude-plugin/**, .agents/plugins/**, and plugin manifests tracked.
+/.claude/
+/.codex/
+
 # Local notes, logs, and temporary files
 /.local/
 /.log/

@@ -1,6 +1,6 @@
 {
   "name": "ai-orch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ai-orch용 Human-Governed SDD command layer. command를 scripts/ai-orch.sh flow로 위임한다.",
   "author": {
     "name": "SHAUL"
@@ -15,6 +15,7 @@
     "claude-code",
     "orchestration"
   ],
+  "skills": "./skills/",
   "interface": {
     "displayName": "AI Orch",
     "shortDescription": "Repo-local command로 Human-Governed SDD flow 실행",

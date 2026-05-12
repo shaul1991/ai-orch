@@ -11,10 +11,14 @@ gh --version | head -n 1
 
 echo
 echo "[GITHUB] auth:"
-if login="$(gh api user --jq .login 2>/dev/null)"; then
+if login="$(current_gh_account)"; then
   echo "Authenticated as: $login"
 else
-  echo "Authenticated token found, but GitHub API user lookup failed."
+  echo "Authenticated token found, but active account lookup failed."
+fi
+
+if [ -n "${AI_GITHUB_ACCOUNT:-}" ]; then
+  echo "Expected account:  $AI_GITHUB_ACCOUNT"
 fi
 
 echo
