@@ -11,11 +11,17 @@ parameters:
 instructions: |
   You are working under Human-Governed SDD.
 
+  Project defaults:
+  - Use Korean as the primary language for notes and summaries.
+  - Claude Code is the default agent for coding, refactoring, tests, and code self-review.
+  - The user may override the provider/model per task.
+
   First run:
   scripts/check-sdd-docs.sh {{ feature }}
 
   Read:
   - docs/ai-governance.md
+  - docs/project-settings.md
   - AGENTS.md
   - docs/specs/{{ feature }}/requirements.md
   - docs/specs/{{ feature }}/acceptance-criteria.md

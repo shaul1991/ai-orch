@@ -1,5 +1,18 @@
 # AI Governance Rules
 
+## 0. Project Defaults
+
+Primary language:
+
+- Korean is the default language for explanations, planning notes, review notes, and repository documentation.
+- Keep code, commands, file paths, API names, and proper nouns in their original form.
+
+Default AI routing:
+
+- Codex is responsible for documentation, research, summaries, governance notes, and non-code analysis.
+- Claude Code is responsible for architecture design, implementation planning, coding, refactoring, tests, and code self-review.
+- The user may override the routing per task.
+
 ## 1. Authority Boundary
 
 Human is responsible for:

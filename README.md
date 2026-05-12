@@ -6,10 +6,18 @@ This repository contains a reusable Human-Governed Spec-Driven Development templ
 
 Human owns domain and business decisions. AI owns technical planning, implementation, testing, self-review, and PR draft creation within approved scope.
 
+## Project Defaults
+
+- Primary language: Korean
+- Documents, research, summaries: Codex
+- Architecture design, coding, refactoring, tests, code self-review: Claude Code
+- Routing can be changed per task with `AI_*_PROVIDER` and `AI_*_MODEL` environment variables.
+
 ## Main Components
 
 - `AGENTS.md`: repository-level AI agent rules
 - `docs/ai-governance.md`: authority boundaries and hard rules
+- `docs/project-settings.md`: project language and AI routing defaults
 - `docs/workflow.md`: SDD workflow from requirements to PR draft
 - `docs/specs/sample-feature/`: sample SDD artifact templates
 - `.goose/recipes/`: goose workflow recipes
@@ -21,4 +29,13 @@ Human owns domain and business decisions. AI owns technical planning, implementa
 ```bash
 scripts/check-sdd-docs.sh sample-feature
 scripts/run-tests.sh
+```
+
+## Default Commands
+
+```bash
+scripts/sdd-docs.sh "research topic" docs/research.md
+scripts/sdd-plan.sh sample-feature
+scripts/sdd-implement.sh sample-feature
+scripts/sdd-review-pr.sh sample-feature
 ```

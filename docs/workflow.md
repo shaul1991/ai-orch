@@ -4,6 +4,15 @@
 
 This repository uses goose as the main orchestration layer and oh-my-openagent as the specialist implementation/review layer.
 
+The default working language is Korean.
+
+Default AI routing:
+
+- Codex: documents, research, summaries, and non-code analysis
+- Claude Code: architecture design, implementation planning, coding, refactoring, tests, and code self-review
+
+These defaults are configurable per task through the wrapper scripts in `scripts/`.
+
 ## Responsibility Split
 
 ### Human
@@ -30,17 +39,40 @@ This repository uses goose as the main orchestration layer and oh-my-openagent a
 
 1. Human creates or approves `requirements.md`.
 2. Human creates or approves `acceptance-criteria.md`.
-3. goose runs `sdd-plan.yaml`.
-4. AI creates `technical-plan.md`, `tasks.md`, and `test-plan.md`.
-5. Human reviews the plan.
-6. goose runs `sdd-implement.yaml`.
-7. AI implements only approved tasks.
-8. AI runs tests.
-9. goose runs `sdd-review-pr.yaml`.
-10. AI writes `self-review.md`.
-11. AI creates PR draft.
-12. AI stops.
-13. Human reviews and decides merge.
+3. Codex may assist with research or document drafting through `scripts/sdd-docs.sh`.
+4. goose runs `sdd-plan.yaml` through `scripts/sdd-plan.sh`.
+5. Claude Code creates `technical-plan.md`, `tasks.md`, and `test-plan.md`.
+6. Human reviews the plan.
+7. goose runs `sdd-implement.yaml` through `scripts/sdd-implement.sh`.
+8. Claude Code implements only approved tasks.
+9. Claude Code runs tests.
+10. goose runs `sdd-review-pr.yaml` through `scripts/sdd-review-pr.sh`.
+11. Claude Code writes `self-review.md`.
+12. AI creates PR draft.
+13. AI stops.
+14. Human reviews and decides merge.
+
+## Provider Overrides
+
+Defaults:
+
+```bash
+AI_DOC_PROVIDER=codex-acp
+AI_DOC_MODEL=gpt-5.5
+AI_ARCH_PROVIDER=claude-code
+AI_ARCH_MODEL=default
+AI_CODE_PROVIDER=claude-code
+AI_CODE_MODEL=default
+AI_REVIEW_PROVIDER=claude-code
+AI_REVIEW_MODEL=default
+```
+
+Override per command:
+
+```bash
+AI_CODE_PROVIDER=codex-acp AI_CODE_MODEL=gpt-5.5 scripts/sdd-implement.sh sample-feature
+AI_DOC_PROVIDER=claude-code AI_DOC_MODEL=default scripts/sdd-docs.sh "topic" docs/output.md
+```
 
 ## AI Stop Point
 

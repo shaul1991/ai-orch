@@ -1,0 +1,32 @@
+version: "1.0.0"
+title: "SDD Research and Documentation"
+description: "Use Codex for Korean research notes, summaries, or documentation without editing source code."
+
+parameters:
+  - key: topic
+    input_type: string
+    requirement: required
+    description: "Research or documentation topic"
+  - key: output
+    input_type: string
+    requirement: required
+    description: "Output markdown file path"
+
+instructions: |
+  You are working under Human-Governed SDD.
+
+  Project defaults:
+  - Use Korean as the primary language.
+  - This phase is for documents, research, summaries, and non-code analysis.
+  - Codex is the default agent for this phase.
+
+  Rules:
+  - Do not edit source code.
+  - Do not decide business or domain policy.
+  - If the topic requires a business or domain decision, write HUMAN_DECISION_REQUIRED.
+  - Keep commands, file paths, API names, and proper nouns in their original form.
+
+  Task:
+  1. Research or analyze the topic: {{ topic }}.
+  2. Write the result to {{ output }}.
+  3. Include open questions and human decision points when applicable.
