@@ -2,7 +2,7 @@
 
 `.ai-orch/`는 AI Orch의 local/개인별 실행 이력 cache를 저장하는 디렉터리다.
 
-현재 plugin version: `0.4.1`
+현재 plugin version: `0.4.2`
 
 ## Git 정책
 

@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
+TARGET_REPO="$(pwd -P)"
 
 source "$SCRIPT_DIR/load-env.sh"
 
-cd "$PROJECT_ROOT"
+cd "$TARGET_REPO"
 
 AI_ORCH_ENV_LOADED=0
 
@@ -430,7 +431,7 @@ print_status_summary() {
 
   if ! ai_orch_initialized; then
   echo "Current branch flow:"
-    echo "  [AI_ORCH_NOT_INITIALIZED] first required command: scripts/ai-orch.sh init"
+    echo "  [AI_ORCH_NOT_INITIALIZED] first required command: /ai-orch:init"
     return 0
   fi
 
@@ -452,7 +453,7 @@ print_status_detail() {
   state_file="$(state_file_for_branch "$branch")"
 
   if ! ai_orch_initialized; then
-    echo "[AI_ORCH_NOT_INITIALIZED] First required command: scripts/ai-orch.sh init"
+    echo "[AI_ORCH_NOT_INITIALIZED] First required command: /ai-orch:init"
     return 1
   fi
 
@@ -523,7 +524,7 @@ run_and_record() {
   shift 3 || true
 
   if [ "$flow" != "init" ] && ! ai_orch_initialized; then
-    echo "[AI_ORCH_NOT_INITIALIZED] First required command: scripts/ai-orch.sh init"
+    echo "[AI_ORCH_NOT_INITIALIZED] First required command: /ai-orch:init"
     return 1
   fi
 
@@ -546,13 +547,13 @@ run_and_record() {
 
 run_ready_flow() {
   local feature="$1"
-  scripts/sdd-analyze.sh "$feature"
-  scripts/check-sdd-docs.sh "$feature"
+  "$SCRIPT_DIR/sdd-analyze.sh" "$feature"
+  "$SCRIPT_DIR/check-sdd-docs.sh" "$feature"
 }
 
 load_ai_orch_env_once() {
   if [ "$AI_ORCH_ENV_LOADED" = "0" ]; then
-    load_project_env "$PROJECT_ROOT"
+    load_project_env "$TARGET_REPO"
     AI_ORCH_ENV_LOADED=1
   fi
 }
@@ -581,7 +582,7 @@ run_local_tests() {
   local context="$1"
 
   if local_tests_enabled; then
-    scripts/run-tests.sh
+    "$SCRIPT_DIR/run-tests.sh"
   else
     echo "[AI_ORCH_TESTS_SKIPPED] context=$context AI_LOCAL_TESTS=${AI_LOCAL_TESTS:-skip}"
     echo "[AI_ORCH_TESTS_NOTE] GitHub Actions still runs scripts/run-tests.sh on main pushes and pull requests."
@@ -590,23 +591,23 @@ run_local_tests() {
 
 run_implement_flow() {
   local feature="$1"
-  scripts/check-sdd-docs.sh "$feature"
-  scripts/sdd-implement.sh "$feature"
+  "$SCRIPT_DIR/check-sdd-docs.sh" "$feature"
+  "$SCRIPT_DIR/sdd-implement.sh" "$feature"
   run_local_tests "implement"
 }
 
 run_review_flow() {
   local feature="$1"
   run_local_tests "review"
-  scripts/sdd-review-pr.sh "$feature"
+  "$SCRIPT_DIR/sdd-review-pr.sh" "$feature"
 }
 
 run_release_check_flow() {
   local feature="$1"
-  scripts/sdd-analyze.sh "$feature"
-  scripts/check-sdd-docs.sh "$feature"
+  "$SCRIPT_DIR/sdd-analyze.sh" "$feature"
+  "$SCRIPT_DIR/check-sdd-docs.sh" "$feature"
   run_local_tests "release-check"
-  scripts/sdd-review-pr.sh "$feature"
+  "$SCRIPT_DIR/sdd-review-pr.sh" "$feature"
 }
 
 print_help() {
@@ -760,19 +761,19 @@ run_flow() {
       ;;
     init)
       print_plan "$flow"
-      run_and_record "$flow" "" ".ai-orch/README.md" scripts/ai-orch-init.sh
+      run_and_record "$flow" "" ".ai-orch/README.md" "$SCRIPT_DIR/ai-orch-init.sh"
       ;;
     protect)
       print_plan "$flow"
       if [ "$#" -eq 0 ]; then
-        scripts/ai-protect.sh list
+        "$SCRIPT_DIR/ai-protect.sh" list
       else
-        scripts/ai-protect.sh "$@"
+        "$SCRIPT_DIR/ai-protect.sh" "$@"
       fi
       ;;
     doctor)
       print_plan "$flow"
-      scripts/run-tests.sh
+      "$SCRIPT_DIR/run-tests.sh"
       ;;
     docs)
       local topic="${1:-}"
@@ -780,33 +781,33 @@ run_flow() {
       need_arg "$topic" "docs flow requires <topic>."
       need_arg "$output" "docs flow requires <output-markdown-path>."
       print_plan "$flow"
-      run_and_record "$flow" "" "$output" scripts/sdd-docs.sh "$topic" "$output"
+      run_and_record "$flow" "" "$output" "$SCRIPT_DIR/sdd-docs.sh" "$topic" "$output"
       ;;
     specify)
       local feature="${1:-}"
       local description="${2:-}"
       need_arg "$feature" "specify flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      run_and_record "$flow" "$feature" "" scripts/sdd-specify.sh "$feature" "$description"
+      run_and_record "$flow" "$feature" "" "$SCRIPT_DIR/sdd-specify.sh" "$feature" "$description"
       ;;
     feature)
       local feature="${1:-}"
       local description="${2:-}"
       need_arg "$feature" "feature flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      run_and_record "$flow" "$feature" "" scripts/sdd-specify.sh "$feature" "$description"
+      run_and_record "$flow" "$feature" "" "$SCRIPT_DIR/sdd-specify.sh" "$feature" "$description"
       ;;
     clarify)
       local feature="${1:-}"
       need_arg "$feature" "clarify flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      run_and_record "$flow" "$feature" "" scripts/sdd-clarify.sh "$feature"
+      run_and_record "$flow" "$feature" "" "$SCRIPT_DIR/sdd-clarify.sh" "$feature"
       ;;
     plan)
       local feature="${1:-}"
       need_arg "$feature" "plan flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      run_and_record "$flow" "$feature" "" scripts/sdd-plan.sh "$feature"
+      run_and_record "$flow" "$feature" "" "$SCRIPT_DIR/sdd-plan.sh" "$feature"
       ;;
     ready)
       local feature="${1:-}"
@@ -830,7 +831,7 @@ run_flow() {
       local feature="${1:-}"
       need_arg "$feature" "pr flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      run_and_record "$flow" "$feature" "" scripts/create-pr-draft.sh "$feature"
+      run_and_record "$flow" "$feature" "" "$SCRIPT_DIR/create-pr-draft.sh" "$feature"
       ;;
     release-check)
       local feature="${1:-}"

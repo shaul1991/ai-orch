@@ -5,11 +5,11 @@ description: AI Orch secret/critical file 접근 보호 정책을 확인하고 l
 
 # AI Orch Protect
 
-`scripts/ai-orch.sh protect <action> [args...]`로 위임한다.
+`"${CLAUDE_PLUGIN_ROOT:-.}/scripts/ai-orch.sh" protect <action> [args...]`로 위임한다.
 
 ## Instructions
 
 1. secret/critical file 접근 보호 정책을 확인하거나 local user-confirmed allow를 관리한다고 설명한다.
-2. repository root에서 `scripts/ai-orch.sh protect <action> [args...]`를 실행한다.
+2. repository root에서 `"${CLAUDE_PLUGIN_ROOT:-.}/scripts/ai-orch.sh" protect <action> [args...]`를 실행한다.
 3. 보호 path가 차단되면 출력된 allow 명령을 사용자가 명시 확인한 경우에만 실행한다.
 4. secret 파일 내용은 직접 읽거나 요약하지 않는다.

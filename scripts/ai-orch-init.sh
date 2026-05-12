@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-PLUGIN_VERSION="0.4.1"
+SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
+TARGET_REPO="$(pwd -P)"
+PLUGIN_VERSION="0.4.2"
 
-cd "$PROJECT_ROOT"
+cd "$TARGET_REPO"
 
 ensure_gitignore_line() {
   local line="$1"
@@ -172,7 +173,7 @@ ensure_agents_md() {
     return 0
   fi
 
-  if [ "$source_file" = "$PROJECT_ROOT/AGENTS.md" ]; then
+  if [ "$source_file" = "$TARGET_REPO/AGENTS.md" ]; then
     return 0
   fi
 
@@ -252,4 +253,4 @@ ensure_claude_symlink
 write_init_marker
 
 echo "[AI_ORCH_INIT_DONE] ensured .ai-orch settings, protection files, and .gitignore local state rules."
-echo "[AI_ORCH_INIT_NEXT] run: scripts/ai-orch.sh status"
+echo "[AI_ORCH_INIT_NEXT] run: /ai-orch:status"
