@@ -1,24 +1,38 @@
-# OS / editor
+# OS and editor state
 .DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
 /.vscode/
+/.idea/
 /vscode/
 
-# Local notes and logs
-/.local/
-/.log/
-*.log
-
-# Secrets / local environment
+# Local environment and secrets
 .env
 .env.*
 !.env.example
+.direnv/
 
-# Dependency caches
-node_modules/
-.bun/
-.cache/
+# Local notes, logs, and temporary files
+/.local/
+/.log/
+/logs/
+/tmp/
+/temp/
+*.log
+*.tmp
+*.temp
 
-# OpenCode local plugin install artifacts.
+# Spec Kit local runtime state.
+# Keep .specify/memory/** tracked.
+/.specify/cache/
+/.specify/logs/
+
+# OpenCode local install artifacts.
 # Keep .opencode/oh-my-openagent.jsonc and .opencode/skills/** tracked.
 /.opencode/node_modules/
 /.opencode/package.json
@@ -26,11 +40,36 @@ node_modules/
 /.opencode/bun.lock
 /.opencode/.gitignore
 
-# Python caches, useful if helper scripts are added later.
+# JavaScript and package-manager caches
+node_modules/
+.pnp.*
+.bun/
+.cache/
+.npm/
+.pnpm-store/
+.yarn/*
+!.yarn/patches/
+!.yarn/plugins/
+!.yarn/releases/
+!.yarn/sdks/
+!.yarn/versions/
+
+# Python caches and virtual environments
 __pycache__/
 *.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.coverage
+.venv/
+venv/
 
-# Build outputs
+# Build, test, and coverage outputs
 dist/
 build/
+out/
+target/
 coverage/
+htmlcov/

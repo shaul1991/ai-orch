@@ -39,6 +39,7 @@ AI_DOC_PROVIDER=claude-code AI_DOC_MODEL=default scripts/sdd-docs.sh "topic" doc
 - `docs/ai-governance.md`: 사람/AI 권한 경계와 금지 규칙
 - `docs/project-settings.md`: 한글 사용 및 Codex/Claude Code 역할 분담
 - `docs/workflow.md`: SDD 작업 흐름
+- `docs/goose-usage-manual.md`: goose 사용 매뉴얼
 - `docs/sdd-spec-kit-adoption.md`: `spec-kit` 도입 기준
 - `docs/specs/sample-feature/`: 샘플 SDD 문서
 - `.goose/recipes/`: goose recipe
