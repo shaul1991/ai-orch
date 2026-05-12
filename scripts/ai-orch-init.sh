@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-PLUGIN_VERSION="0.4.0"
+PLUGIN_VERSION="0.4.1"
 
 cd "$PROJECT_ROOT"
 
