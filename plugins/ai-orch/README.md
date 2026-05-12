@@ -7,6 +7,7 @@
 ## Commands
 
 - `/ai-orch:help`
+- `/ai-orch:init`
 - `/ai-orch:status [feature]`
 - `/ai-orch:docs <topic> <output-markdown-path>`
 - `/ai-orch:feature <feature> [description]`

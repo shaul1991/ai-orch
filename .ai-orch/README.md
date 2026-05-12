@@ -2,7 +2,7 @@
 
 `.ai-orch/`는 AI Orch의 local/개인별 실행 이력 cache를 저장하는 디렉터리다.
 
-현재 plugin version: `0.2.0`
+현재 plugin version: `0.3.0`
 
 ## Git Policy
 
@@ -28,3 +28,7 @@
 - 공유 산출물: `docs/specs/{feature}/...`
 - local 실행 상태: `.ai-orch/branches/{branch}.md`
 - PR/merge/release 판단: human-owned
+
+## Initialization
+
+`scripts/ai-orch.sh init`은 이 파일과 `.gitignore`의 AI Orch local state 규칙을 보장한다.

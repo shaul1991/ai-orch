@@ -83,6 +83,7 @@ local clone을 직접 등록할 때는 repo root에서 `claude plugin marketplac
 
 ```text
 /ai-orch:help
+/ai-orch:init
 /ai-orch:status [feature]
 /ai-orch:docs <topic> <output-markdown-path>
 /ai-orch:feature <feature> [description]
@@ -97,6 +98,7 @@ Claude Code나 Codex에서 shell command 형태로 실행할 때는 `scripts/ai-
 
 ```bash
 scripts/ai-orch.sh help
+scripts/ai-orch.sh init
 scripts/ai-orch.sh status
 scripts/ai-orch.sh feature login "로그인 기능"
 scripts/ai-orch.sh plan login
@@ -113,6 +115,8 @@ scripts/ai-orch.sh explain implement login
 ```
 
 `scripts/ai-orch.sh`로 실행한 flow는 현재 git branch 기준으로 `.ai-orch/`에 local 상태를 기록한다. 이 디렉터리는 개인별 실행 이력/캐시이므로 git에서 무시되며, `/ai-orch:status` 또는 `scripts/ai-orch.sh status`로 `feature -> Human Approved -> plan -> ready -> implement -> review -> pr -> human review -> merge` 체크리스트와 산출물 링크를 확인한다.
+
+plugin 설치 직후 대상 repo에서는 먼저 `/ai-orch:init` 또는 `scripts/ai-orch.sh init`을 실행한다. 이 command가 `.ai-orch/README.md`와 `.gitignore`의 local state 규칙을 준비한다.
 
 ## 설치 전제 조건
 

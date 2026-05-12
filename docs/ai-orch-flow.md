@@ -174,6 +174,7 @@ AI가 멈춰야 하는 경우:
 Claude Code나 Codex에서 사용할 때는 고수준 command wrapper인 `scripts/ai-orch.sh`를 우선 사용한다. 이 wrapper는 실행할 flow의 계획을 먼저 출력하고, 기존 entrypoint script를 순서대로 호출한다.
 
 ```bash
+scripts/ai-orch.sh init
 scripts/ai-orch.sh feature new-feature "새 기능 설명"
 # Human edits and approves requirements.md / acceptance-criteria.md
 scripts/ai-orch.sh plan new-feature
@@ -193,6 +194,7 @@ Claude Code/Codex native command plugin을 활성화했다면 같은 flow를 com
 
 ```text
 /ai-orch:help
+/ai-orch:init
 /ai-orch:status [feature]
 /ai-orch:docs <topic> <output-markdown-path>
 /ai-orch:feature new-feature "새 기능 설명"
@@ -348,6 +350,7 @@ Marketplace/manifest:
 | Native command | 위임되는 shell flow | 목적 |
 |---|---|---|
 | `/ai-orch:help` | `scripts/ai-orch.sh help` | 사용 가능한 flow와 예시 출력 |
+| `/ai-orch:init` | `scripts/ai-orch.sh init` | `.ai-orch/README.md`와 `.gitignore` local state 규칙 초기화 |
 | `/ai-orch:status [feature]` | `scripts/ai-orch.sh status [feature]` | 현재 branch의 flow 체크리스트와 산출물 링크 출력 |
 | `/ai-orch:docs <topic> <output>` | `scripts/ai-orch.sh docs <topic> <output>` | 문서/리서치 작성 |
 | `/ai-orch:feature <feature> [description]` | `scripts/ai-orch.sh feature <feature> [description]` | 새 feature SDD 초안 작성 |
@@ -388,9 +391,12 @@ flow 이름 확인
 → .ai-orch/에 현재 branch 기준 실행 상태와 산출물 링크를 기록
 ```
 
+`help/status`는 `.ai-orch/README.md`와 `.gitignore` 규칙이 준비되지 않은 경우 local cache 파일을 만들지 않고 `scripts/ai-orch.sh init` 실행을 먼저 안내한다.
+
 | Flow command | 내부에서 실행하는 script | 목적 |
 |---|---|---|
 | `scripts/ai-orch.sh help` | 없음 | 사용 가능한 flow와 현재 branch 진행현황 요약 출력 |
+| `scripts/ai-orch.sh init` | `scripts/ai-orch-init.sh` | `.ai-orch/README.md`와 `.gitignore` local state 규칙 초기화 |
 | `scripts/ai-orch.sh status [feature]` | 없음 | `.ai-orch/branches/{branch}.md`를 렌더링하고 checklist 출력 |
 | `scripts/ai-orch.sh doctor` | `scripts/run-tests.sh` | 로컬 script syntax와 sample SDD gate 확인 |
 | `scripts/ai-orch.sh docs <topic> <output>` | `scripts/sdd-docs.sh` | 문서/리서치 작성 |
@@ -408,6 +414,7 @@ flow 이름 확인
 예:
 
 ```bash
+scripts/ai-orch.sh init
 scripts/ai-orch.sh status
 scripts/ai-orch.sh explain implement login
 scripts/ai-orch.sh implement login
@@ -416,6 +423,21 @@ scripts/ai-orch.sh implement login
 ### 9.5 Local 실행 상태: `.ai-orch/`
 
 `scripts/ai-orch.sh`는 사용자가 실행한 flow를 현재 git branch 기준 local cache로 기록한다. 이 정보는 개인별 실행 이력이므로 `.gitignore` 처리되며, 공유해야 하는 산출물은 계속 `docs/specs/{feature}/...`에 둔다.
+
+초기화는 명시적으로 실행한다.
+
+```bash
+scripts/ai-orch.sh init
+```
+
+이 command는 `.ai-orch/README.md`를 생성/갱신하고 `.gitignore`에 다음 규칙이 없으면 추가한다.
+
+```gitignore
+# AI Orch local state
+/.ai-orch/*
+!/.ai-orch/
+!/.ai-orch/README.md
+```
 
 | Path | Git 처리 | 역할 |
 |---|---|---|

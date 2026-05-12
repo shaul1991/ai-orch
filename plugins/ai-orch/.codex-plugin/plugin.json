@@ -1,6 +1,6 @@
 {
   "name": "ai-orch",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "ai-orch용 Human-Governed SDD command layer. command를 scripts/ai-orch.sh flow로 위임한다.",
   "author": {
     "name": "SHAUL"
@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "AI Orch",
     "shortDescription": "Repo-local command로 Human-Governed SDD flow 실행",
-    "longDescription": "ai-orch의 문서, feature, planning, readiness, implementation, review, draft PR flow를 command로 노출하고 실행은 scripts/ai-orch.sh에 위임한다.",
+    "longDescription": "ai-orch의 init, status, 문서, feature, planning, readiness, implementation, review, draft PR flow를 command로 노출하고 실행은 scripts/ai-orch.sh에 위임한다.",
     "developerName": "SHAUL",
     "category": "Productivity",
     "capabilities": [
@@ -31,6 +31,7 @@
     "privacyPolicyURL": "https://github.com/shaul1991/ai-orch",
     "termsOfServiceURL": "https://github.com/shaul1991/ai-orch",
     "defaultPrompt": [
+      "AI Orch local 상태 초기화",
       "현재 branch SDD 진행현황 확인",
       "SDD feature flow 시작",
       "승인된 SDD feature 계획",

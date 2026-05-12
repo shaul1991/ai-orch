@@ -18,6 +18,9 @@ Flows:
   help
       Show this help.
 
+  init
+      Initialize .ai-orch local state and .gitignore rules.
+
   doctor
       Check local script syntax and the sample SDD gate.
 
@@ -58,6 +61,7 @@ Flows:
       Show the current branch flow checklist and local artifacts.
 
 Examples:
+  scripts/ai-orch.sh init
   scripts/ai-orch.sh docs "운영 정책 정리" docs/output.md
   scripts/ai-orch.sh feature login "로그인 기능"
   scripts/ai-orch.sh plan login
@@ -96,6 +100,14 @@ current_branch() {
   fi
 
   echo "no-git"
+}
+
+ai_orch_initialized() {
+  [ -f ".ai-orch/README.md" ] &&
+    [ -f ".gitignore" ] &&
+    grep -Fxq "/.ai-orch/*" ".gitignore" &&
+    grep -Fxq "!/.ai-orch/" ".gitignore" &&
+    grep -Fxq "!/.ai-orch/README.md" ".gitignore"
 }
 
 branch_slug() {
@@ -165,6 +177,9 @@ flow_state_key() {
       ;;
     docs)
       echo "DOCS"
+      ;;
+    init)
+      echo "INIT"
       ;;
     release-check)
       echo "RELEASE_CHECK"
@@ -264,6 +279,10 @@ artifact_links_for_flow() {
       if [ -n "$docs_output" ]; then
         add_artifact "$docs_output"
       fi
+      ;;
+    init)
+      add_artifact ".ai-orch/README.md"
+      add_artifact ".gitignore"
       ;;
     feature)
       add_artifact "$base/spec.md"
@@ -365,6 +384,7 @@ $(checkbox_for_flow feature "$state_file") feature -> $(checkbox_for_human_appro
 
 | Flow | Status | Last Run | Artifacts |
 |---|---|---|---|
+| init | $(flow_status_value INIT "$state_file") | $(flow_last_run_value INIT "$state_file") | $(artifact_links_for_flow init "$feature" "$state_file") |
 | docs | $(flow_status_value DOCS "$state_file") | $(flow_last_run_value DOCS "$state_file") | $(artifact_links_for_flow docs "$feature" "$state_file") |
 | clarify | $(flow_status_value CLARIFY "$state_file") | $(flow_last_run_value CLARIFY "$state_file") | $(artifact_links_for_flow clarify "$feature" "$state_file") |
 | release-check | $(flow_status_value RELEASE_CHECK "$state_file") | $(flow_last_run_value RELEASE_CHECK "$state_file") | $(artifact_links_for_flow release-check "$feature" "$state_file") |
@@ -382,6 +402,12 @@ EOF_STATUS
 print_status_summary() {
   local branch feature state_file status_file
 
+  if ! ai_orch_initialized; then
+    echo "Current branch flow:"
+    echo "  [AI_ORCH_NOT_INITIALIZED] run: scripts/ai-orch.sh init"
+    return 0
+  fi
+
   branch="$(current_branch)"
   state_file="$(state_file_for_branch "$branch")"
   feature="$(state_get FEATURE "$state_file")"
@@ -398,6 +424,11 @@ print_status_detail() {
 
   branch="$(current_branch)"
   state_file="$(state_file_for_branch "$branch")"
+
+  if ! ai_orch_initialized; then
+    echo "[AI_ORCH_NOT_INITIALIZED] Run scripts/ai-orch.sh init first."
+    return 1
+  fi
 
   if [ -n "$feature" ]; then
     state_set FEATURE "$feature" "$state_file"
@@ -465,6 +496,11 @@ run_and_record() {
 
   shift 3 || true
 
+  if [ "$flow" != "init" ] && ! ai_orch_initialized; then
+    echo "[AI_ORCH_NOT_INITIALIZED] Run scripts/ai-orch.sh init first."
+    return 1
+  fi
+
   output_file="$(mktemp)"
 
   set +e
@@ -522,6 +558,15 @@ print_plan() {
   echo "[AI_ORCH_PLAN] flow=$flow${feature:+ feature=$feature}"
 
   case "$flow" in
+    init)
+      cat <<'EOF_PLAN'
+1. Run scripts/ai-orch-init.sh.
+2. Create or refresh .ai-orch/README.md with the current plugin version.
+3. Ensure .gitignore ignores .ai-orch local state while keeping .ai-orch/README.md trackable.
+4. Record init completion in the current branch local state.
+5. Print the next status command.
+EOF_PLAN
+      ;;
     doctor)
       cat <<'EOF_PLAN'
 1. Run scripts/run-tests.sh.
@@ -635,6 +680,10 @@ run_flow() {
   case "$flow" in
     help|-h|--help)
       print_help
+      ;;
+    init)
+      print_plan "$flow"
+      run_and_record "$flow" "" ".ai-orch/README.md" scripts/ai-orch-init.sh
       ;;
     doctor)
       print_plan "$flow"
