@@ -152,7 +152,40 @@ EOF_EXAMPLE
   fi
 }
 
+ensure_agents_md() {
+  if [ -f "AGENTS.md" ] && [ -s "AGENTS.md" ]; then
+    return 0
+  fi
+
+  local source_root source_file
+  source_root="$(cd -P "$(dirname "${BASH_SOURCE[0]}")/.." 2>/dev/null && pwd -P)"
+
+  if [ -z "$source_root" ]; then
+    echo "[AI_ORCH_INIT_WARN] Could not resolve source root to locate AGENTS.md template."
+    return 0
+  fi
+
+  source_file="$source_root/AGENTS.md"
+
+  if [ ! -f "$source_file" ]; then
+    echo "[AI_ORCH_INIT_WARN] AGENTS.md template not found at $source_file."
+    return 0
+  fi
+
+  if [ "$source_file" = "$PROJECT_ROOT/AGENTS.md" ]; then
+    return 0
+  fi
+
+  cp "$source_file" "AGENTS.md"
+  echo "[AI_ORCH_INIT_WROTE_AGENTS] copied AGENTS.md template from $source_file"
+}
+
 ensure_claude_symlink() {
+  if [ ! -e "AGENTS.md" ]; then
+    echo "[AI_ORCH_INIT_WARN] AGENTS.md missing; skipping CLAUDE.md symlink."
+    return 0
+  fi
+
   if [ -L "CLAUDE.md" ]; then
     return 0
   fi
@@ -214,6 +247,7 @@ ensure_gitignore
 write_local_state_readme
 write_settings_templates
 write_local_protect_template
+ensure_agents_md
 ensure_claude_symlink
 write_init_marker
 
