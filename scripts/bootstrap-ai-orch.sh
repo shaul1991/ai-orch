@@ -36,6 +36,14 @@ touch scripts/check-sdd-docs.sh
 touch scripts/ai-guard.sh
 touch scripts/run-tests.sh
 touch scripts/create-pr-draft.sh
+touch scripts/github-lib.sh
+touch scripts/github-check.sh
+touch scripts/github-issue-create.sh
+touch scripts/github-issue-list.sh
+touch scripts/github-issue-view.sh
+touch scripts/github-pr-check.sh
+touch scripts/github-pr-list.sh
+touch scripts/github-pr-view.sh
 touch scripts/load-env.sh
 touch scripts/sdd-docs.sh
 touch scripts/sdd-plan.sh

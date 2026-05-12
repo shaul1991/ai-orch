@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+source "$SCRIPT_DIR/github-lib.sh"
+cd "$PROJECT_ROOT"
+
 FEATURE="${1:-}"
 
 if [ -z "$FEATURE" ]; then
@@ -15,11 +21,8 @@ if [ ! -f "$BASE/self-review.md" ]; then
   exit 1
 fi
 
-if ! command -v gh >/dev/null 2>&1; then
-  echo "[PR_DRAFT] GitHub CLI not found. Print PR draft instead."
-  cat "$BASE/self-review.md"
-  exit 0
-fi
+require_gh
+REPO="$(resolve_gh_repo)"
 
 TITLE="SDD: $FEATURE"
 
@@ -50,4 +53,10 @@ This PR was prepared under Human-Governed SDD.
 - [ ] Merge decision
 EOF_PR
 
-gh pr create --draft --title "$TITLE" --body-file "$BODY_FILE"
+ARGS=(pr create --repo "$REPO" --draft --title "$TITLE" --body-file "$BODY_FILE")
+
+if [ -n "${GH_BASE_BRANCH:-}" ]; then
+  ARGS+=(--base "$GH_BASE_BRANCH")
+fi
+
+gh "${ARGS[@]}"

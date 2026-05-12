@@ -79,7 +79,7 @@ cd shaul-ai-orch
 Homebrew를 사용하는 경우:
 
 ```bash
-brew install block-goose-cli anomalyco/tap/opencode
+brew install block-goose-cli anomalyco/tap/opencode gh
 ```
 
 Codex CLI와 ACP adapter:
@@ -167,7 +167,62 @@ GOOSE_PROVIDER: codex-acp
 GOOSE_MODEL: gpt-5.5
 ```
 
-### 6. 설치 검증
+### 6. GitHub CLI 설정
+
+issue와 PR 관리는 GitHub CLI `gh`를 사용한다.
+
+설치 확인:
+
+```bash
+gh --version
+```
+
+인증:
+
+```bash
+gh auth login
+gh auth status
+```
+
+여러 GitHub 계정을 사용하는 경우 active account를 확인한다.
+
+```bash
+gh auth status
+```
+
+필요하면 계정을 전환한다.
+
+```bash
+gh auth switch
+```
+
+이 repo에서 issue/PR 명령이 대상 repository를 찾는 방식은 두 가지다.
+
+1. git `origin` remote 사용
+2. `.env`의 `GH_REPO=owner/repo` 사용
+
+현재 repo에 remote가 있는지 확인:
+
+```bash
+git remote -v
+```
+
+remote가 없다면 `.env`에 `GH_REPO`를 설정한다.
+
+```bash
+GH_REPO=owner/shaul-ai-orch
+GH_BASE_BRANCH=main
+GH_ISSUE_LIMIT=20
+GH_PR_LIMIT=20
+```
+
+GitHub 연결 확인:
+
+```bash
+scripts/github-check.sh
+```
+
+### 7. 설치 검증
 
 ```bash
 scripts/check-sdd-docs.sh sample-feature
@@ -175,6 +230,7 @@ scripts/run-tests.sh
 goose run --provider codex-acp --model gpt-5.5 --no-session --max-turns 1 --quiet --text 'Reply with exactly: CODEX_READY. Do not call tools.'
 goose run --provider claude-code --model default --no-session --max-turns 1 --quiet --text 'Reply with exactly: CLAUDE_READY. Do not call tools.'
 bunx oh-my-openagent doctor
+scripts/github-check.sh
 ```
 
 정상 응답:
@@ -186,7 +242,7 @@ CLAUDE_READY
 System OK
 ```
 
-### 7. 로컬 provider 설정
+### 8. 로컬 provider 설정
 
 공유 템플릿은 `.env.example`에 둔다. 개인별 실제 설정은 `.env`에 둔다.
 
@@ -204,6 +260,10 @@ AI_CODE_MODEL=gpt-5.5
 
 AI_DOC_PROVIDER=claude-code
 AI_DOC_MODEL=default
+
+GH_BASE_BRANCH=main
+GH_ISSUE_LIMIT=20
+GH_PR_LIMIT=20
 ```
 
 shell에서 직접 넘긴 값이 `.env`보다 우선한다.
@@ -393,6 +453,64 @@ Draft PR:
 scripts/create-pr-draft.sh sample-feature
 ```
 
+## GitHub issue/PR 관리
+
+GitHub 명령은 `gh`를 직접 사용해도 되고, repo wrapper script를 사용해도 된다. wrapper script는 `.env`를 자동으로 읽고 `GH_REPO` 또는 git `origin` remote를 기준으로 대상 repository를 결정한다.
+
+상태 확인:
+
+```bash
+scripts/github-check.sh
+```
+
+issue 목록:
+
+```bash
+scripts/github-issue-list.sh
+scripts/github-issue-list.sh closed
+```
+
+issue 보기:
+
+```bash
+scripts/github-issue-view.sh 123
+```
+
+issue 생성:
+
+```bash
+scripts/github-issue-create.sh "Issue title" "Issue body"
+scripts/github-issue-create.sh "Issue title" docs/issues/body.md "bug,priority-high"
+```
+
+PR 목록:
+
+```bash
+scripts/github-pr-list.sh
+scripts/github-pr-list.sh closed
+```
+
+PR 보기:
+
+```bash
+scripts/github-pr-view.sh 123
+```
+
+PR check 확인:
+
+```bash
+scripts/github-pr-check.sh
+scripts/github-pr-check.sh 123
+```
+
+SDD self-review 후 draft PR 생성:
+
+```bash
+scripts/create-pr-draft.sh sample-feature
+```
+
+AI는 PR 생성 또는 PR 초안 작성까지만 수행한다. PR 리뷰, 머지, 배포 판단은 사람이 한다.
+
 ## 운영 규칙
 
 AI가 해도 되는 일:
@@ -469,6 +587,32 @@ npm install -g @code-yeongyu/comment-checker
 
 ```bash
 command -v comment-checker
+```
+
+### GitHub CLI 확인
+
+```bash
+gh --version
+gh auth status
+scripts/github-check.sh
+```
+
+`Could not resolve GitHub repository`가 나오면 다음 중 하나를 설정한다.
+
+```bash
+git remote add origin https://github.com/<owner>/<repo>.git
+```
+
+또는 `.env`:
+
+```bash
+GH_REPO=<owner>/<repo>
+```
+
+여러 계정이 있고 active account가 다르면:
+
+```bash
+gh auth switch
 ```
 
 ### recipe 렌더링 확인
