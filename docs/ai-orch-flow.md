@@ -19,11 +19,12 @@ flowchart LR
     POLICY --> AGENT["AI Provider<br/>Codex / Claude Code"]
     SPECIN --> AGENT
     AGENT --> OUTPUT["Output Artifacts<br/>docs/specs/{feature}/...<br/>code/tests/self-review/PR draft"]
+    CMD --> LOCAL["Local State<br/>.ai-orch/branches/{branch}.md<br/>.ai-orch/state/{branch}.state"]
     OUTPUT --> GATE["Gate / Verification<br/>check-sdd-docs.sh<br/>run-tests.sh"]
     GATE --> HUMAN["Human Review<br/>scope/PR/merge/release 결정"]
 ```
 
-핵심은 native command가 command hinting UX를 제공하고, `scripts/ai-orch.sh`와 `scripts/sdd-*.sh`가 안정적인 실행 진입점을 맡는 구조다. `goose`가 실행 엔진이며, `.goose/recipes/`가 단계별 행동 규칙이다. 산출물은 대부분 `docs/specs/{feature}/`에 쌓이고, 구현 단계 이후에만 source code와 tests가 변경된다.
+핵심은 native command가 command hinting UX를 제공하고, `scripts/ai-orch.sh`와 `scripts/sdd-*.sh`가 안정적인 실행 진입점을 맡는 구조다. `goose`가 실행 엔진이며, `.goose/recipes/`가 단계별 행동 규칙이다. 산출물은 대부분 `docs/specs/{feature}/`에 쌓이고, 구현 단계 이후에만 source code와 tests가 변경된다. 개인별 실행 상태는 git에서 무시되는 `.ai-orch/`에 branch 단위로 남긴다.
 
 ## 2. Command에서 Goose까지
 
@@ -179,6 +180,7 @@ scripts/ai-orch.sh plan new-feature
 scripts/ai-orch.sh ready new-feature
 scripts/ai-orch.sh implement new-feature
 scripts/ai-orch.sh review new-feature
+scripts/ai-orch.sh status
 ```
 
 실행하지 않고 flow 계획만 확인:
@@ -191,6 +193,7 @@ Claude Code/Codex native command plugin을 활성화했다면 같은 flow를 com
 
 ```text
 /ai-orch:help
+/ai-orch:status [feature]
 /ai-orch:docs <topic> <output-markdown-path>
 /ai-orch:feature new-feature "새 기능 설명"
 /ai-orch:plan new-feature
@@ -345,6 +348,7 @@ Marketplace/manifest:
 | Native command | 위임되는 shell flow | 목적 |
 |---|---|---|
 | `/ai-orch:help` | `scripts/ai-orch.sh help` | 사용 가능한 flow와 예시 출력 |
+| `/ai-orch:status [feature]` | `scripts/ai-orch.sh status [feature]` | 현재 branch의 flow 체크리스트와 산출물 링크 출력 |
 | `/ai-orch:docs <topic> <output>` | `scripts/ai-orch.sh docs <topic> <output>` | 문서/리서치 작성 |
 | `/ai-orch:feature <feature> [description]` | `scripts/ai-orch.sh feature <feature> [description]` | 새 feature SDD 초안 작성 |
 | `/ai-orch:plan <feature>` | `scripts/ai-orch.sh plan <feature>` | 기술 계획과 task/test plan 작성 |
@@ -381,11 +385,13 @@ flow 이름 확인
 → 실행 계획 출력
 → flow에 연결된 기존 script들을 순서대로 실행
 → 각 script가 필요하면 .env를 읽고 goose/gh/local 검증을 수행
+→ .ai-orch/에 현재 branch 기준 실행 상태와 산출물 링크를 기록
 ```
 
 | Flow command | 내부에서 실행하는 script | 목적 |
 |---|---|---|
-| `scripts/ai-orch.sh help` | 없음 | 사용 가능한 flow 출력 |
+| `scripts/ai-orch.sh help` | 없음 | 사용 가능한 flow와 현재 branch 진행현황 요약 출력 |
+| `scripts/ai-orch.sh status [feature]` | 없음 | `.ai-orch/branches/{branch}.md`를 렌더링하고 checklist 출력 |
 | `scripts/ai-orch.sh doctor` | `scripts/run-tests.sh` | 로컬 script syntax와 sample SDD gate 확인 |
 | `scripts/ai-orch.sh docs <topic> <output>` | `scripts/sdd-docs.sh` | 문서/리서치 작성 |
 | `scripts/ai-orch.sh feature <feature> [description]` | `scripts/sdd-specify.sh` | 새 feature 시작. 사람 승인 전까지만 진행 |
@@ -402,11 +408,31 @@ flow 이름 확인
 예:
 
 ```bash
+scripts/ai-orch.sh status
 scripts/ai-orch.sh explain implement login
 scripts/ai-orch.sh implement login
 ```
 
-### 9.5 `scripts/load-env.sh`
+### 9.5 Local 실행 상태: `.ai-orch/`
+
+`scripts/ai-orch.sh`는 사용자가 실행한 flow를 현재 git branch 기준 local cache로 기록한다. 이 정보는 개인별 실행 이력이므로 `.gitignore` 처리되며, 공유해야 하는 산출물은 계속 `docs/specs/{feature}/...`에 둔다.
+
+| Path | Git 처리 | 역할 |
+|---|---|---|
+| `.ai-orch/README.md` | tracked | local state 디렉터리 설명 |
+| `.ai-orch/state/{branch}.state` | ignored | branch별 flow 실행 상태 key-value cache |
+| `.ai-orch/branches/{branch}.md` | ignored | 사람이 읽는 checklist와 artifact link |
+| `.ai-orch/runs/*.md` | ignored | 개별 실행 기록 |
+
+상태 조회는 다음 checklist를 기준으로 한다.
+
+```text
+[ ] feature -> [ ] human approve -> [ ] plan -> [ ] ready -> [ ] implement -> [ ] review -> [ ] pr -> [ ] human review -> [ ] merge
+```
+
+`human approve`는 `requirements.md`와 `acceptance-criteria.md`에 `Human Approved`가 모두 있을 때만 완료로 표시된다. `human review`와 `merge`는 AI가 자동 완료하지 않고 항상 사람 소유 단계로 남긴다.
+
+### 9.6 `scripts/load-env.sh`
 
 모든 주요 wrapper가 공유하는 환경 로더다.
 
@@ -424,7 +450,7 @@ scripts/ai-orch.sh implement login
 AI_CODE_PROVIDER=codex-acp scripts/sdd-implement.sh sample-feature
 ```
 
-### 9.6 Guard and Test Scripts
+### 9.7 Guard and Test Scripts
 
 | Script | 입력 | 내부 동작 | 결과 |
 |---|---|---|---|
@@ -455,7 +481,7 @@ flowchart TD
     SAMPLE --> END
 ```
 
-### 9.7 GitHub Helper Scripts
+### 9.8 GitHub Helper Scripts
 
 GitHub helper는 `scripts/github-lib.sh`를 공유한다.
 
@@ -497,7 +523,7 @@ AI_GITHUB_REPO=atms-backend/example-repo
 
 `create-pr-draft.sh`는 `docs/specs/{feature}/self-review.md`가 없으면 실패한다. draft PR 본문에는 constitution, spec, requirements, plans, tasks, tests, traceability, self-review 링크가 포함된다.
 
-### 9.8 Bootstrap Script
+### 9.9 Bootstrap Script
 
 `scripts/bootstrap-ai-orch.sh`는 새 repository에 기본 skeleton을 만들기 위한 script다.
 

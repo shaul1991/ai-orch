@@ -11,6 +11,9 @@ usage() {
 Usage:
   scripts/ai-orch.sh <flow> [args...]
 
+Best flow:
+  feature -> Human Approved -> plan -> ready -> implement -> review -> pr -> human review -> merge
+
 Flows:
   help
       Show this help.
@@ -51,6 +54,9 @@ Flows:
   explain <flow>
       Print the execution plan for a flow without running it.
 
+  status [feature-name]
+      Show the current branch flow checklist and local artifacts.
+
 Examples:
   scripts/ai-orch.sh docs "운영 정책 정리" docs/output.md
   scripts/ai-orch.sh feature login "로그인 기능"
@@ -59,6 +65,7 @@ Examples:
   scripts/ai-orch.sh implement login
   scripts/ai-orch.sh review login
   scripts/ai-orch.sh pr login
+  scripts/ai-orch.sh status
 EOF_USAGE
 }
 
@@ -71,6 +78,441 @@ need_arg() {
     usage
     exit 1
   fi
+}
+
+current_branch() {
+  local branch
+
+  branch="$(git branch --show-current 2>/dev/null || true)"
+
+  if [ -n "$branch" ]; then
+    echo "$branch"
+    return 0
+  fi
+
+  if branch="$(git rev-parse --short HEAD 2>/dev/null)"; then
+    echo "detached-$branch"
+    return 0
+  fi
+
+  echo "no-git"
+}
+
+branch_slug() {
+  local branch="$1"
+  printf '%s' "$branch" | sed 's#[/[:space:]]#-#g; s#[^[:alnum:]._-]#-#g; s#--*#-#g; s#^-##; s#-$##'
+}
+
+state_file_for_branch() {
+  local branch="$1"
+  echo ".ai-orch/state/$(branch_slug "$branch").state"
+}
+
+status_file_for_branch() {
+  local branch="$1"
+  echo ".ai-orch/branches/$(branch_slug "$branch").md"
+}
+
+state_get() {
+  local key="$1"
+  local file="$2"
+
+  [ -f "$file" ] || return 0
+
+  awk -F= -v key="$key" '$1 == key { sub(/^[^=]*=/, ""); print; exit }' "$file"
+}
+
+state_set() {
+  local key="$1"
+  local value="$2"
+  local file="$3"
+  local tmp="${file}.tmp.$$"
+
+  mkdir -p "$(dirname "$file")"
+
+  if [ -f "$file" ]; then
+    awk -F= -v key="$key" '$1 != key' "$file" > "$tmp"
+  else
+    : > "$tmp"
+  fi
+
+  printf '%s=%s\n' "$key" "$value" >> "$tmp"
+  mv "$tmp" "$file"
+}
+
+flow_state_key() {
+  case "$1" in
+    feature|specify)
+      echo "FEATURE"
+      ;;
+    clarify)
+      echo "CLARIFY"
+      ;;
+    plan)
+      echo "PLAN"
+      ;;
+    ready)
+      echo "READY"
+      ;;
+    implement)
+      echo "IMPLEMENT"
+      ;;
+    review)
+      echo "REVIEW"
+      ;;
+    pr)
+      echo "PR"
+      ;;
+    docs)
+      echo "DOCS"
+      ;;
+    release-check)
+      echo "RELEASE_CHECK"
+      ;;
+    *)
+      echo "$1" | tr '[:lower:]-' '[:upper:]_'
+      ;;
+  esac
+}
+
+human_approved() {
+  local feature="$1"
+  local base="docs/specs/$feature"
+
+  [ -n "$feature" ] || return 1
+  [ -f "$base/requirements.md" ] || return 1
+  [ -f "$base/acceptance-criteria.md" ] || return 1
+
+  grep -q 'Human Approved' "$base/requirements.md" &&
+    grep -q 'Human Approved' "$base/acceptance-criteria.md"
+}
+
+checkbox_for_flow() {
+  local flow="$1"
+  local state_file="$2"
+  local key status
+
+  key="FLOW_$(flow_state_key "$flow")"
+  status="$(state_get "$key" "$state_file")"
+
+  if [ "$status" = "done" ]; then
+    printf '[x]'
+  else
+    printf '[ ]'
+  fi
+}
+
+checkbox_for_human_approve() {
+  local feature="$1"
+
+  if human_approved "$feature"; then
+    printf '[x]'
+  else
+    printf '[ ]'
+  fi
+}
+
+flow_status_value() {
+  local key="$1"
+  local state_file="$2"
+  local status
+
+  status="$(state_get "FLOW_$key" "$state_file")"
+  echo "${status:-pending}"
+}
+
+flow_last_run_value() {
+  local key="$1"
+  local state_file="$2"
+  local last_run
+
+  last_run="$(state_get "FLOW_${key}_AT" "$state_file")"
+  echo "${last_run:--}"
+}
+
+human_approve_artifacts() {
+  local feature="$1"
+
+  if [ -n "$feature" ]; then
+    echo "\`docs/specs/$feature/requirements.md\`, \`docs/specs/$feature/acceptance-criteria.md\`"
+  else
+    echo "-"
+  fi
+}
+
+artifact_links_for_flow() {
+  local flow="$1"
+  local feature="$2"
+  local state_file="$3"
+  local artifacts=""
+  local base="docs/specs/$feature"
+  local docs_output pr_url
+
+  add_artifact() {
+    local path="$1"
+    if [ -e "$path" ]; then
+      if [ -n "$artifacts" ]; then
+        artifacts="$artifacts, "
+      fi
+      artifacts="${artifacts}\`$path\`"
+    fi
+  }
+
+  case "$flow" in
+    docs)
+      docs_output="$(state_get DOCS_OUTPUT "$state_file")"
+      if [ -n "$docs_output" ]; then
+        add_artifact "$docs_output"
+      fi
+      ;;
+    feature)
+      add_artifact "$base/spec.md"
+      add_artifact "$base/requirements.md"
+      add_artifact "$base/acceptance-criteria.md"
+      add_artifact "$base/clarifications.md"
+      ;;
+    clarify)
+      add_artifact "$base/clarifications.md"
+      ;;
+    plan)
+      add_artifact "$base/technical-plan.md"
+      add_artifact "$base/plan.md"
+      add_artifact "$base/tasks.md"
+      add_artifact "$base/test-plan.md"
+      add_artifact "$base/traceability.md"
+      ;;
+    ready)
+      add_artifact "$base/analysis.md"
+      add_artifact "$base/checklist.md"
+      ;;
+    implement)
+      add_artifact "$base/tasks.md"
+      add_artifact "$base/test-plan.md"
+      ;;
+    review)
+      add_artifact "$base/self-review.md"
+      ;;
+    pr)
+      pr_url="$(state_get PR_URL "$state_file")"
+      if [ -n "$pr_url" ]; then
+        artifacts="[$pr_url]($pr_url)"
+      fi
+      ;;
+    release-check)
+      add_artifact "$base/analysis.md"
+      add_artifact "$base/checklist.md"
+      add_artifact "$base/self-review.md"
+      ;;
+  esac
+
+  if [ -n "$artifacts" ]; then
+    echo "$artifacts"
+  else
+    echo "-"
+  fi
+}
+
+render_branch_status() {
+  local branch="$1"
+  local feature="${2:-}"
+  local state_file status_file updated
+  local feature_value
+
+  state_file="$(state_file_for_branch "$branch")"
+  status_file="$(status_file_for_branch "$branch")"
+
+  if [ -z "$feature" ]; then
+    feature="$(state_get FEATURE "$state_file")"
+  fi
+
+  feature_value="${feature:-unknown}"
+  updated="$(date '+%Y-%m-%d %H:%M:%S %z')"
+
+  mkdir -p "$(dirname "$status_file")"
+
+  cat > "$status_file" <<EOF_STATUS
+# AI Orch Branch Status
+
+Branch: \`$branch\`
+Feature: \`$feature_value\`
+Updated: $updated
+
+## Best Flow
+
+\`\`\`text
+feature -> Human Approved -> plan -> ready -> implement -> review -> pr -> human review -> merge
+\`\`\`
+
+## Flow Checklist
+
+$(checkbox_for_flow feature "$state_file") feature -> $(checkbox_for_human_approve "$feature") human approve -> $(checkbox_for_flow plan "$state_file") plan -> $(checkbox_for_flow ready "$state_file") ready -> $(checkbox_for_flow implement "$state_file") implement -> $(checkbox_for_flow review "$state_file") review -> $(checkbox_for_flow pr "$state_file") pr -> [ ] human review -> [ ] merge
+
+## Artifacts
+
+| Flow | Status | Last Run | Artifacts |
+|---|---|---|---|
+| feature | $(flow_status_value FEATURE "$state_file") | $(flow_last_run_value FEATURE "$state_file") | $(artifact_links_for_flow feature "$feature" "$state_file") |
+| human approve | $(if human_approved "$feature"; then echo done; else echo pending; fi) | - | $(human_approve_artifacts "$feature") |
+| plan | $(flow_status_value PLAN "$state_file") | $(flow_last_run_value PLAN "$state_file") | $(artifact_links_for_flow plan "$feature" "$state_file") |
+| ready | $(flow_status_value READY "$state_file") | $(flow_last_run_value READY "$state_file") | $(artifact_links_for_flow ready "$feature" "$state_file") |
+| implement | $(flow_status_value IMPLEMENT "$state_file") | $(flow_last_run_value IMPLEMENT "$state_file") | $(artifact_links_for_flow implement "$feature" "$state_file") |
+| review | $(flow_status_value REVIEW "$state_file") | $(flow_last_run_value REVIEW "$state_file") | $(artifact_links_for_flow review "$feature" "$state_file") |
+| pr | $(flow_status_value PR "$state_file") | $(flow_last_run_value PR "$state_file") | $(artifact_links_for_flow pr "$feature" "$state_file") |
+| human review | human-owned | - | - |
+| merge | human-owned | - | - |
+
+## Auxiliary Runs
+
+| Flow | Status | Last Run | Artifacts |
+|---|---|---|---|
+| docs | $(flow_status_value DOCS "$state_file") | $(flow_last_run_value DOCS "$state_file") | $(artifact_links_for_flow docs "$feature" "$state_file") |
+| clarify | $(flow_status_value CLARIFY "$state_file") | $(flow_last_run_value CLARIFY "$state_file") | $(artifact_links_for_flow clarify "$feature" "$state_file") |
+| release-check | $(flow_status_value RELEASE_CHECK "$state_file") | $(flow_last_run_value RELEASE_CHECK "$state_file") | $(artifact_links_for_flow release-check "$feature" "$state_file") |
+
+## Notes
+
+- This file is local cache and is ignored by git.
+- Shared source of truth remains in \`docs/specs/{feature}/...\`.
+- Human review and merge are never auto-completed by AI Orch.
+EOF_STATUS
+
+  echo "$status_file"
+}
+
+print_status_summary() {
+  local branch feature state_file status_file
+
+  branch="$(current_branch)"
+  state_file="$(state_file_for_branch "$branch")"
+  feature="$(state_get FEATURE "$state_file")"
+  status_file="$(render_branch_status "$branch" "$feature")"
+
+  echo "Current branch flow:"
+  echo "  $(checkbox_for_flow feature "$state_file") feature -> $(checkbox_for_human_approve "$feature") human approve -> $(checkbox_for_flow plan "$state_file") plan -> $(checkbox_for_flow ready "$state_file") ready -> $(checkbox_for_flow implement "$state_file") implement -> $(checkbox_for_flow review "$state_file") review -> $(checkbox_for_flow pr "$state_file") pr -> [ ] human review -> [ ] merge"
+  echo "  branch=$branch feature=${feature:-unknown} status=${status_file}"
+}
+
+print_status_detail() {
+  local feature="${1:-}"
+  local branch state_file status_file
+
+  branch="$(current_branch)"
+  state_file="$(state_file_for_branch "$branch")"
+
+  if [ -n "$feature" ]; then
+    state_set FEATURE "$feature" "$state_file"
+  fi
+
+  status_file="$(render_branch_status "$branch" "$feature")"
+
+  cat "$status_file"
+}
+
+record_flow() {
+  local flow="$1"
+  local feature="$2"
+  local status="$3"
+  local output_file="${4:-}"
+  local artifact="${5:-}"
+  local branch state_file key now run_id run_file pr_url
+
+  branch="$(current_branch)"
+  state_file="$(state_file_for_branch "$branch")"
+  key="$(flow_state_key "$flow")"
+  now="$(date '+%Y-%m-%d %H:%M:%S %z')"
+  run_id="$(date '+%Y%m%dT%H%M%S%z')-$(branch_slug "$branch")-$flow"
+  run_file=".ai-orch/runs/$run_id.md"
+
+  mkdir -p ".ai-orch/runs"
+
+  if [ -n "$feature" ]; then
+    state_set FEATURE "$feature" "$state_file"
+  fi
+
+  state_set "FLOW_$key" "$status" "$state_file"
+  state_set "FLOW_${key}_AT" "$now" "$state_file"
+
+  if [ "$flow" = "docs" ] && [ -n "$artifact" ]; then
+    state_set DOCS_OUTPUT "$artifact" "$state_file"
+  fi
+
+  if [ "$flow" = "pr" ] && [ -n "$output_file" ] && [ -f "$output_file" ]; then
+    pr_url="$(grep -Eo 'https://[^[:space:]]+' "$output_file" | head -n 1 || true)"
+    if [ -n "$pr_url" ]; then
+      state_set PR_URL "$pr_url" "$state_file"
+    fi
+  fi
+
+  render_branch_status "$branch" "$feature" >/dev/null
+
+  cat > "$run_file" <<EOF_RUN
+# AI Orch Run
+
+- Branch: \`$branch\`
+- Feature: \`${feature:-unknown}\`
+- Flow: \`$flow\`
+- Status: \`$status\`
+- Time: $now
+- Branch status: \`$(status_file_for_branch "$branch")\`
+EOF_RUN
+}
+
+run_and_record() {
+  local flow="$1"
+  local feature="$2"
+  local artifact="${3:-}"
+  local output_file exit_code
+
+  shift 3 || true
+
+  output_file="$(mktemp)"
+
+  set +e
+  "$@" 2>&1 | tee "$output_file"
+  exit_code=${PIPESTATUS[0]}
+  set -e
+
+  if [ "$exit_code" -eq 0 ]; then
+    record_flow "$flow" "$feature" "done" "$output_file" "$artifact"
+  else
+    record_flow "$flow" "$feature" "failed" "$output_file" "$artifact"
+  fi
+
+  rm -f "$output_file"
+  return "$exit_code"
+}
+
+run_ready_flow() {
+  local feature="$1"
+  scripts/sdd-analyze.sh "$feature"
+  scripts/check-sdd-docs.sh "$feature"
+}
+
+run_implement_flow() {
+  local feature="$1"
+  scripts/check-sdd-docs.sh "$feature"
+  scripts/sdd-implement.sh "$feature"
+  scripts/run-tests.sh
+}
+
+run_review_flow() {
+  local feature="$1"
+  scripts/run-tests.sh
+  scripts/sdd-review-pr.sh "$feature"
+}
+
+run_release_check_flow() {
+  local feature="$1"
+  scripts/sdd-analyze.sh "$feature"
+  scripts/check-sdd-docs.sh "$feature"
+  scripts/run-tests.sh
+  scripts/sdd-review-pr.sh "$feature"
+}
+
+print_help() {
+  usage
+  echo
+  print_status_summary
 }
 
 print_plan() {
@@ -169,6 +611,15 @@ EOF_PLAN
 5. Stop before merge or release.
 EOF_PLAN
       ;;
+    status)
+      cat <<'EOF_PLAN'
+1. Resolve the current git branch.
+2. Read local state from .ai-orch/state/{branch}.state.
+3. Check Human Approved markers in requirements.md and acceptance-criteria.md.
+4. Render .ai-orch/branches/{branch}.md with checklist and artifact links.
+5. Print the rendered status document.
+EOF_PLAN
+      ;;
     *)
       echo "[AI_ORCH_FAILED] Unknown flow for explain: $flow"
       usage
@@ -183,7 +634,7 @@ run_flow() {
 
   case "$flow" in
     help|-h|--help)
-      usage
+      print_help
       ;;
     doctor)
       print_plan "$flow"
@@ -195,70 +646,67 @@ run_flow() {
       need_arg "$topic" "docs flow requires <topic>."
       need_arg "$output" "docs flow requires <output-markdown-path>."
       print_plan "$flow"
-      scripts/sdd-docs.sh "$topic" "$output"
+      run_and_record "$flow" "" "$output" scripts/sdd-docs.sh "$topic" "$output"
       ;;
     specify)
       local feature="${1:-}"
       local description="${2:-}"
       need_arg "$feature" "specify flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      scripts/sdd-specify.sh "$feature" "$description"
+      run_and_record "$flow" "$feature" "" scripts/sdd-specify.sh "$feature" "$description"
       ;;
     feature)
       local feature="${1:-}"
       local description="${2:-}"
       need_arg "$feature" "feature flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      scripts/sdd-specify.sh "$feature" "$description"
+      run_and_record "$flow" "$feature" "" scripts/sdd-specify.sh "$feature" "$description"
       ;;
     clarify)
       local feature="${1:-}"
       need_arg "$feature" "clarify flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      scripts/sdd-clarify.sh "$feature"
+      run_and_record "$flow" "$feature" "" scripts/sdd-clarify.sh "$feature"
       ;;
     plan)
       local feature="${1:-}"
       need_arg "$feature" "plan flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      scripts/sdd-plan.sh "$feature"
+      run_and_record "$flow" "$feature" "" scripts/sdd-plan.sh "$feature"
       ;;
     ready)
       local feature="${1:-}"
       need_arg "$feature" "ready flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      scripts/sdd-analyze.sh "$feature"
-      scripts/check-sdd-docs.sh "$feature"
+      run_and_record "$flow" "$feature" "" run_ready_flow "$feature"
       ;;
     implement)
       local feature="${1:-}"
       need_arg "$feature" "implement flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      scripts/check-sdd-docs.sh "$feature"
-      scripts/sdd-implement.sh "$feature"
-      scripts/run-tests.sh
+      run_and_record "$flow" "$feature" "" run_implement_flow "$feature"
       ;;
     review)
       local feature="${1:-}"
       need_arg "$feature" "review flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      scripts/run-tests.sh
-      scripts/sdd-review-pr.sh "$feature"
+      run_and_record "$flow" "$feature" "" run_review_flow "$feature"
       ;;
     pr)
       local feature="${1:-}"
       need_arg "$feature" "pr flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      scripts/create-pr-draft.sh "$feature"
+      run_and_record "$flow" "$feature" "" scripts/create-pr-draft.sh "$feature"
       ;;
     release-check)
       local feature="${1:-}"
       need_arg "$feature" "release-check flow requires <feature-name>."
       print_plan "$flow" "$feature"
-      scripts/sdd-analyze.sh "$feature"
-      scripts/check-sdd-docs.sh "$feature"
-      scripts/run-tests.sh
-      scripts/sdd-review-pr.sh "$feature"
+      run_and_record "$flow" "$feature" "" run_release_check_flow "$feature"
+      ;;
+    status)
+      print_plan "$flow" "${1:-}"
+      print_status_detail "${1:-}"
       ;;
     explain)
       local target_flow="${1:-}"

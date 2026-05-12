@@ -21,6 +21,9 @@ Desktop.ini
 # Keep .claude-plugin/**, .agents/plugins/**, and plugin manifests tracked.
 /.claude/
 /.codex/
+/.ai-orch/*
+!/.ai-orch/
+!/.ai-orch/README.md
 
 # Local notes, logs, and temporary files
 /.local/

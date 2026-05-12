@@ -1,6 +1,6 @@
 {
   "name": "ai-orch",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "ai-orch용 Human-Governed SDD command layer. command를 scripts/ai-orch.sh flow로 위임한다.",
   "author": {
     "name": "SHAUL"
@@ -31,6 +31,7 @@
     "privacyPolicyURL": "https://github.com/shaul1991/ai-orch",
     "termsOfServiceURL": "https://github.com/shaul1991/ai-orch",
     "defaultPrompt": [
+      "현재 branch SDD 진행현황 확인",
       "SDD feature flow 시작",
       "승인된 SDD feature 계획",
       "SDD readiness와 implementation gate 실행"

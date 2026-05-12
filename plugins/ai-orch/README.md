@@ -7,6 +7,7 @@
 ## Commands
 
 - `/ai-orch:help`
+- `/ai-orch:status [feature]`
 - `/ai-orch:docs <topic> <output-markdown-path>`
 - `/ai-orch:feature <feature> [description]`
 - `/ai-orch:plan <feature>`
@@ -42,3 +43,5 @@ Codex는 plugin skill을 통해 같은 `/ai-orch:*` hinting을 노출한다. 설
 local clone을 직접 등록할 때는 repo root에서 `claude plugin marketplace add .` 또는 `codex plugin marketplace add .`를 실행한다.
 
 이 plugin은 SDD 로직을 직접 구현하지 않는다. 실행 동작의 source of truth는 repository의 shell wrapper다.
+
+`/ai-orch:help`와 `/ai-orch:status`는 현재 branch의 local checklist를 `.ai-orch/branches/{branch}.md` 기준으로 보여준다. `.ai-orch/`의 실행 이력은 개인 cache이므로 git에 커밋하지 않는다.

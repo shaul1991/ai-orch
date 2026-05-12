@@ -47,6 +47,7 @@ AI_DOC_PROVIDER=claude-code AI_DOC_MODEL=default scripts/sdd-docs.sh "topic" doc
 - `.claude-plugin/`: Claude Code marketplace manifest
 - `.agents/plugins/`: Codex marketplace manifest
 - `plugins/ai-orch/`: Claude Code/Codex native command plugin
+- `.ai-orch/`: 개인별 branch flow 실행 상태 cache. `README.md`만 추적하고 실행 이력은 git에서 무시
 - `.opencode/`: oh-my-openagent/OpenCode 설정 및 skill
 - `scripts/`: SDD 실행 wrapper, guard, test, PR helper
 
@@ -82,6 +83,7 @@ local clone을 직접 등록할 때는 repo root에서 `claude plugin marketplac
 
 ```text
 /ai-orch:help
+/ai-orch:status [feature]
 /ai-orch:docs <topic> <output-markdown-path>
 /ai-orch:feature <feature> [description]
 /ai-orch:plan <feature>
@@ -95,6 +97,7 @@ Claude Code나 Codex에서 shell command 형태로 실행할 때는 `scripts/ai-
 
 ```bash
 scripts/ai-orch.sh help
+scripts/ai-orch.sh status
 scripts/ai-orch.sh feature login "로그인 기능"
 scripts/ai-orch.sh plan login
 scripts/ai-orch.sh ready login
@@ -108,6 +111,8 @@ scripts/ai-orch.sh pr login
 ```bash
 scripts/ai-orch.sh explain implement login
 ```
+
+`scripts/ai-orch.sh`로 실행한 flow는 현재 git branch 기준으로 `.ai-orch/`에 local 상태를 기록한다. 이 디렉터리는 개인별 실행 이력/캐시이므로 git에서 무시되며, `/ai-orch:status` 또는 `scripts/ai-orch.sh status`로 `feature -> Human Approved -> plan -> ready -> implement -> review -> pr -> human review -> merge` 체크리스트와 산출물 링크를 확인한다.
 
 ## 설치 전제 조건
 

@@ -1,0 +1,15 @@
+---
+name: status
+description: AI Orch 현재 브랜치 flow 체크리스트와 local 실행 이력을 표시한다. 사용자가 `/ai-orch:status`, ai-orch status, SDD 진행현황 조회를 요청할 때 사용한다.
+---
+
+# AI Orch Status
+
+`scripts/ai-orch.sh status [feature-name]`로 위임한다.
+
+## Instructions
+
+1. 현재 git branch 기준 AI Orch flow 진행현황을 조회한다고 간단히 설명한다.
+2. repository root에서 `scripts/ai-orch.sh status [feature-name]`를 실행한다.
+3. 출력된 checklist와 artifact link를 그대로 요약한다.
+4. 다음 미완료 flow가 있으면 한 줄로 안내하되, 사람 승인/리뷰/merge는 사용자가 직접 수행해야 한다고 구분한다.
