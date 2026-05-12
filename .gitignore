@@ -23,7 +23,6 @@ Desktop.ini
 /.ai-orch/*
 !/.ai-orch/
 !/.ai-orch/README.md
-!/.ai-orch/init.json
 !/.ai-orch/setting.json
 !/.ai-orch/settings.example.json
 

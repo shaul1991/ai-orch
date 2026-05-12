@@ -587,7 +587,7 @@ print_plan() {
 3. Create .ai-orch/setting.json, .ai-orch/settings.example.json, and .ai-orch/setting.local.json when missing.
 4. Create .ai-orch/protect.local template when missing.
 5. Ensure CLAUDE.md points to AGENTS.md as a symlink when missing.
-6. Write .ai-orch/init.json marker.
+6. Write .ai-orch/init.json local marker.
 7. Ensure .gitignore ignores local state while keeping shared .ai-orch files trackable.
 8. Record init completion in the current branch local state.
 9. Print the next status command.

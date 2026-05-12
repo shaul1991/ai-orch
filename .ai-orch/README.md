@@ -6,8 +6,8 @@
 
 ## Git 정책
 
-- 이 파일만 git에 추적한다.
-- 실제 실행 이력은 git에 커밋하지 않는다.
+- `README.md`, `setting.json`, `settings.example.json`만 git에 추적한다.
+- `init.json`, 개인 설정, 실제 실행 이력은 git에 커밋하지 않는다.
 - branch별 status와 run log는 개인 로컬 상태로만 유지한다.
 
 ## 생성 경로
@@ -17,6 +17,7 @@
 ├── README.md          # tracked
 ├── setting.json       # tracked, AI Orch 공유 설정
 ├── settings.example.json # tracked, 설정 key/default 안내
+├── init.json          # ignored, init 실행 여부 marker
 ├── setting.local.json # ignored, 개인별 설정 override
 ├── protect.local      # ignored, 개인별 추가 deny policy
 ├── protect.allow.local # ignored, 사용자 확인 후 등록한 allow policy
