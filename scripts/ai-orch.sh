@@ -19,7 +19,8 @@ Flows:
       Show this help.
 
   init
-      Initialize .ai-orch local state and .gitignore rules.
+      Required first-time setup. Initialize .ai-orch local state, settings,
+      protection policy files, and CLAUDE.md -> AGENTS.md symlink.
 
   protect <action> [args...]
       Check or manage protected secret/critical file access.
@@ -108,6 +109,7 @@ current_branch() {
 
 ai_orch_initialized() {
   [ -f ".ai-orch/README.md" ] &&
+    [ -f ".ai-orch/init.json" ] &&
     [ -f ".ai-orch/setting.json" ] &&
     [ -f ".ai-orch/settings.example.json" ] &&
     [ -f ".gitignore" ] &&
@@ -293,8 +295,10 @@ artifact_links_for_flow() {
       ;;
     init)
       add_artifact ".ai-orch/README.md"
+      add_artifact ".ai-orch/init.json"
       add_artifact ".ai-orch/setting.json"
       add_artifact ".ai-orch/settings.example.json"
+      add_artifact "CLAUDE.md"
       add_artifact ".gitignore"
       ;;
     protect)
@@ -421,8 +425,8 @@ print_status_summary() {
   local branch feature state_file status_file
 
   if ! ai_orch_initialized; then
-    echo "Current branch flow:"
-    echo "  [AI_ORCH_NOT_INITIALIZED] run: scripts/ai-orch.sh init"
+  echo "Current branch flow:"
+    echo "  [AI_ORCH_NOT_INITIALIZED] first required command: scripts/ai-orch.sh init"
     return 0
   fi
 
@@ -444,7 +448,7 @@ print_status_detail() {
   state_file="$(state_file_for_branch "$branch")"
 
   if ! ai_orch_initialized; then
-    echo "[AI_ORCH_NOT_INITIALIZED] Run scripts/ai-orch.sh init first."
+    echo "[AI_ORCH_NOT_INITIALIZED] First required command: scripts/ai-orch.sh init"
     return 1
   fi
 
@@ -515,7 +519,7 @@ run_and_record() {
   shift 3 || true
 
   if [ "$flow" != "init" ] && ! ai_orch_initialized; then
-    echo "[AI_ORCH_NOT_INITIALIZED] Run scripts/ai-orch.sh init first."
+    echo "[AI_ORCH_NOT_INITIALIZED] First required command: scripts/ai-orch.sh init"
     return 1
   fi
 
@@ -582,9 +586,11 @@ print_plan() {
 2. Create or refresh .ai-orch/README.md with the current plugin version.
 3. Create .ai-orch/setting.json, .ai-orch/settings.example.json, and .ai-orch/setting.local.json when missing.
 4. Create .ai-orch/protect.local template when missing.
-5. Ensure .gitignore ignores local state while keeping shared .ai-orch files trackable.
-6. Record init completion in the current branch local state.
-7. Print the next status command.
+5. Ensure CLAUDE.md points to AGENTS.md as a symlink when missing.
+6. Write .ai-orch/init.json marker.
+7. Ensure .gitignore ignores local state while keeping shared .ai-orch files trackable.
+8. Record init completion in the current branch local state.
+9. Print the next status command.
 EOF_PLAN
       ;;
     protect)

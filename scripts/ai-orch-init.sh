@@ -148,6 +148,45 @@ EOF_EXAMPLE
   fi
 }
 
+ensure_claude_symlink() {
+  if [ -L "CLAUDE.md" ]; then
+    return 0
+  fi
+
+  if [ -e "CLAUDE.md" ]; then
+    echo "[AI_ORCH_INIT_WARN] CLAUDE.md already exists and is not a symlink. Leaving it unchanged."
+    return 0
+  fi
+
+  ln -s "AGENTS.md" "CLAUDE.md"
+}
+
+write_init_marker() {
+  mkdir -p ".ai-orch"
+
+  cat > ".ai-orch/init.json" <<EOF_INIT
+{
+  "initialized": true,
+  "pluginVersion": "$PLUGIN_VERSION",
+  "updatedAt": "$(date '+%Y-%m-%dT%H:%M:%S%z')",
+  "settings": {
+    "shared": ".ai-orch/setting.json",
+    "example": ".ai-orch/settings.example.json",
+    "local": ".ai-orch/setting.local.json"
+  },
+  "protection": {
+    "shared": "ai-orch.protect",
+    "localDeny": ".ai-orch/protect.local",
+    "localAllow": ".ai-orch/protect.allow.local"
+  },
+  "agentFiles": {
+    "source": "AGENTS.md",
+    "claude": "CLAUDE.md"
+  }
+}
+EOF_INIT
+}
+
 write_local_protect_template() {
   mkdir -p ".ai-orch"
 
@@ -171,6 +210,8 @@ ensure_gitignore
 write_local_state_readme
 write_settings_templates
 write_local_protect_template
+ensure_claude_symlink
+write_init_marker
 
 echo "[AI_ORCH_INIT_DONE] ensured .ai-orch settings, protection files, and .gitignore local state rules."
 echo "[AI_ORCH_INIT_NEXT] run: scripts/ai-orch.sh status"

@@ -14,7 +14,7 @@ flowchart LR
     ENV --> VAR["Provider/Model 선택<br/>AI_DOC_* / AI_ARCH_* / AI_CODE_* / AI_REVIEW_*"]
     VAR --> GOOSE["goose run<br/>--provider<br/>--model<br/>--recipe<br/>--params feature=..."]
     GOOSE --> RECIPE[".goose/recipes/*.yaml<br/>단계별 instruction"]
-    RECIPE --> POLICY["Policy Context<br/>AGENTS.md<br/>constitution.md<br/>ai-governance.md<br/>project-settings.md"]
+    RECIPE --> POLICY["Policy Context<br/>AGENTS.md<br/>CLAUDE.md<br/>constitution.md<br/>ai-governance.md<br/>project-settings.md"]
     RECIPE --> SPECIN["Input Specs<br/>docs/specs/{feature}/..."]
     POLICY --> AGENT["AI Provider<br/>Codex / Claude Code"]
     SPECIN --> AGENT
@@ -350,7 +350,7 @@ Marketplace/manifest:
 | Native command | 위임되는 shell flow | 목적 |
 |---|---|---|
 | `/ai-orch:help` | `scripts/ai-orch.sh help` | 사용 가능한 flow와 예시 출력 |
-| `/ai-orch:init` | `scripts/ai-orch.sh init` | `.ai-orch/README.md`와 `.gitignore` local state 규칙 초기화 |
+| `/ai-orch:init` | `scripts/ai-orch.sh init` | 최초 필수 초기화. `.ai-orch/init.json`, settings, 보호 정책, `CLAUDE.md -> AGENTS.md` symlink 준비 |
 | `/ai-orch:protect <action> [args...]` | `scripts/ai-orch.sh protect <action> [args...]` | secret/critical file 접근 보호 정책 확인과 local allow 관리 |
 | `/ai-orch:status [feature]` | `scripts/ai-orch.sh status [feature]` | 현재 branch의 flow 체크리스트와 산출물 링크 출력 |
 | `/ai-orch:docs <topic> <output>` | `scripts/ai-orch.sh docs <topic> <output>` | 문서/리서치 작성 |
@@ -392,12 +392,12 @@ flow 이름 확인
 → .ai-orch/에 현재 branch 기준 실행 상태와 산출물 링크를 기록
 ```
 
-`help/status`는 `.ai-orch/README.md`와 `.gitignore` 규칙이 준비되지 않은 경우 local cache 파일을 만들지 않고 `scripts/ai-orch.sh init` 실행을 먼저 안내한다.
+`init`은 최초 필수 command다. `status`와 실행형 flow는 `.ai-orch/init.json`, `.ai-orch/README.md`, settings, `.gitignore` 규칙이 준비되지 않은 경우 local cache 파일을 만들지 않고 `scripts/ai-orch.sh init` 실행을 먼저 안내한다.
 
 | Flow command | 내부에서 실행하는 script | 목적 |
 |---|---|---|
 | `scripts/ai-orch.sh help` | 없음 | 사용 가능한 flow와 현재 branch 진행현황 요약 출력 |
-| `scripts/ai-orch.sh init` | `scripts/ai-orch-init.sh` | `.ai-orch/README.md`와 `.gitignore` local state 규칙 초기화 |
+| `scripts/ai-orch.sh init` | `scripts/ai-orch-init.sh` | 최초 필수 초기화. `.ai-orch/init.json`, settings, 보호 정책, `CLAUDE.md -> AGENTS.md` symlink 준비 |
 | `scripts/ai-orch.sh protect <action> [args...]` | `scripts/ai-protect.sh` | secret/critical file 접근 보호 정책 확인과 local allow 관리 |
 | `scripts/ai-orch.sh status [feature]` | 없음 | `.ai-orch/branches/{branch}.md`를 렌더링하고 checklist 출력 |
 | `scripts/ai-orch.sh doctor` | `scripts/run-tests.sh` | 로컬 script syntax와 sample SDD gate 확인 |

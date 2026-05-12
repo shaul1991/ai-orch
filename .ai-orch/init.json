@@ -1,0 +1,19 @@
+{
+  "initialized": true,
+  "pluginVersion": "0.4.0",
+  "updatedAt": "2026-05-12T16:41:38+0900",
+  "settings": {
+    "shared": ".ai-orch/setting.json",
+    "example": ".ai-orch/settings.example.json",
+    "local": ".ai-orch/setting.local.json"
+  },
+  "protection": {
+    "shared": "ai-orch.protect",
+    "localDeny": ".ai-orch/protect.local",
+    "localAllow": ".ai-orch/protect.allow.local"
+  },
+  "agentFiles": {
+    "source": "AGENTS.md",
+    "claude": "CLAUDE.md"
+  }
+}

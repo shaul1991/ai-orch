@@ -35,6 +35,7 @@ AI_DOC_PROVIDER=claude-code AI_DOC_MODEL=default scripts/sdd-docs.sh "topic" doc
 ## 구성 요소
 
 - `AGENTS.md`: repo 전체 agent 규칙
+- `CLAUDE.md`: Claude Code용 agent 규칙 진입점. macOS/git 환경 기준 `AGENTS.md` symlink
 - `.specify/memory/constitution.md`: `spec-kit` 호환 project constitution
 - `docs/ai-governance.md`: 사람/AI 권한 경계와 금지 규칙
 - `docs/project-settings.md`: 한글 사용 및 Codex/Claude Code 역할 분담
@@ -119,7 +120,7 @@ scripts/ai-orch.sh explain implement login
 
 `scripts/ai-orch.sh`로 실행한 flow는 현재 git branch 기준으로 `.ai-orch/`에 local 상태를 기록한다. 이 디렉터리는 개인별 실행 이력/캐시이므로 git에서 무시되며, `/ai-orch:status` 또는 `scripts/ai-orch.sh status`로 `feature -> Human Approved -> plan -> ready -> implement -> review -> pr -> human review -> merge` 체크리스트와 산출물 링크를 확인한다.
 
-plugin 설치 직후 대상 repo에서는 먼저 `/ai-orch:init` 또는 `scripts/ai-orch.sh init`을 실행한다. 이 command가 `.ai-orch/README.md`와 `.gitignore`의 local state 규칙을 준비한다.
+plugin 설치 직후 target repo에서 최초 필수 command는 `/ai-orch:init` 또는 `scripts/ai-orch.sh init`이다. init 전에는 `status`와 실행형 flow가 멈추고 init 실행을 안내한다. 이 command가 `.ai-orch/init.json`, `.ai-orch/README.md`, `.ai-orch/setting*.json`, `.gitignore`, `CLAUDE.md -> AGENTS.md` symlink를 준비한다.
 
 secret/critical file 접근은 `/ai-orch:protect` 또는 `scripts/ai-orch.sh protect`로 확인한다. 기본 정책은 `ai-orch.protect`, 개인 추가 차단은 `.ai-orch/protect.local`, 사용자가 명시 확인한 local 허용은 `.ai-orch/protect.allow.local`에 둔다.
 
