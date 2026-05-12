@@ -5,6 +5,11 @@ mkdir -p docs/specs/sample-feature
 mkdir -p docs/specs/sample-feature/contracts
 mkdir -p .specify/memory
 mkdir -p .goose/recipes
+mkdir -p .claude-plugin
+mkdir -p .agents/plugins
+mkdir -p plugins/ai-orch/.claude-plugin
+mkdir -p plugins/ai-orch/.codex-plugin
+mkdir -p plugins/ai-orch/commands
 mkdir -p .opencode/skills/human-governed-sdd
 mkdir -p .opencode/skills/backend-implementation
 mkdir -p .opencode/skills/self-review
@@ -18,6 +23,7 @@ touch docs/ai-governance.md
 touch docs/project-settings.md
 touch docs/workflow.md
 touch docs/sdd-spec-kit-adoption.md
+touch docs/ai-orch-flow.md
 
 touch docs/specs/sample-feature/spec.md
 touch docs/specs/sample-feature/requirements.md
@@ -44,6 +50,19 @@ touch .goose/recipes/sdd-implement.yaml
 touch .goose/recipes/sdd-review-pr.yaml
 touch .goose/recipes/sdd-research-docs.yaml
 
+touch .claude-plugin/marketplace.json
+touch .agents/plugins/marketplace.json
+touch plugins/ai-orch/README.md
+touch plugins/ai-orch/.claude-plugin/plugin.json
+touch plugins/ai-orch/.codex-plugin/plugin.json
+touch plugins/ai-orch/commands/docs.md
+touch plugins/ai-orch/commands/feature.md
+touch plugins/ai-orch/commands/plan.md
+touch plugins/ai-orch/commands/ready.md
+touch plugins/ai-orch/commands/implement.md
+touch plugins/ai-orch/commands/review.md
+touch plugins/ai-orch/commands/pr.md
+
 touch .opencode/oh-my-openagent.jsonc
 touch .opencode/skills/human-governed-sdd/SKILL.md
 touch .opencode/skills/backend-implementation/SKILL.md
@@ -51,6 +70,7 @@ touch .opencode/skills/self-review/SKILL.md
 
 touch scripts/check-sdd-docs.sh
 touch scripts/ai-guard.sh
+touch scripts/ai-orch.sh
 touch scripts/run-tests.sh
 touch scripts/create-pr-draft.sh
 touch scripts/github-lib.sh

@@ -1,0 +1,20 @@
+{
+  "name": "ai-orch",
+  "interface": {
+    "displayName": "SHAUL AI Orch"
+  },
+  "plugins": [
+    {
+      "name": "ai-orch",
+      "source": {
+        "source": "local",
+        "path": "./plugins/ai-orch"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

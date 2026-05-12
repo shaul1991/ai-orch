@@ -1,4 +1,4 @@
-# shaul-ai-orch
+# ai-orch
 
 Human-Governed SDD 기반 AI orchestration 템플릿이다. 이 repo는 `goose`, Codex, Claude Code, oh-my-openagent/OpenCode를 조합해 사람이 도메인/비즈니스 판단을 통제하고 AI가 문서화, 계획, 구현, 테스트, self-review, PR 초안 작성을 보조하도록 구성한다.
 
@@ -39,12 +39,74 @@ AI_DOC_PROVIDER=claude-code AI_DOC_MODEL=default scripts/sdd-docs.sh "topic" doc
 - `docs/ai-governance.md`: 사람/AI 권한 경계와 금지 규칙
 - `docs/project-settings.md`: 한글 사용 및 Codex/Claude Code 역할 분담
 - `docs/workflow.md`: SDD 작업 흐름
+- `docs/ai-orch-flow.md`: script 입력부터 goose 실행, 산출물까지 전체 flow
 - `docs/goose-usage-manual.md`: goose 사용 매뉴얼
 - `docs/sdd-spec-kit-adoption.md`: `spec-kit` 도입 기준
 - `docs/specs/sample-feature/`: 샘플 SDD 문서
 - `.goose/recipes/`: goose recipe
+- `.claude-plugin/`: Claude Code marketplace manifest
+- `.agents/plugins/`: Codex marketplace manifest
+- `plugins/ai-orch/`: Claude Code/Codex native command plugin
 - `.opencode/`: oh-my-openagent/OpenCode 설정 및 skill
 - `scripts/`: SDD 실행 wrapper, guard, test, PR helper
+
+## Native command와 통합 entrypoint
+
+Claude Code나 Codex의 command hinting을 사용하려면 repo-local `ai-orch` plugin을 등록한다. 이 plugin은 SDD 로직을 직접 구현하지 않고, command를 `scripts/ai-orch.sh` flow로 위임한다.
+
+Claude Code 안에서:
+
+```text
+/plugin marketplace add shaul1991/ai-orch
+/plugin install ai-orch@ai-orch
+```
+
+Claude Code CLI에서:
+
+```bash
+claude plugin marketplace add shaul1991/ai-orch
+claude plugin install -s project ai-orch@ai-orch
+```
+
+Codex:
+
+```bash
+codex plugin marketplace add shaul1991/ai-orch
+```
+
+Codex CLI는 marketplace 등록 명령을 제공한다. 실제 command hinting은 Codex의 plugin 설치/활성화 UI 또는 session plugin 선택에서 `ai-orch`를 활성화한 뒤 확인한다.
+
+local clone을 직접 등록할 때는 repo root에서 `claude plugin marketplace add .` 또는 `codex plugin marketplace add .`를 실행한다.
+
+활성화 후 1차 command set:
+
+```text
+/ai-orch:docs <topic> <output-markdown-path>
+/ai-orch:feature <feature> [description]
+/ai-orch:plan <feature>
+/ai-orch:ready <feature>
+/ai-orch:implement <feature>
+/ai-orch:review <feature>
+/ai-orch:pr <feature>
+```
+
+Claude Code나 Codex에서 shell command 형태로 실행할 때는 `scripts/ai-orch.sh`를 우선 사용한다. 이 wrapper는 실행 전에 어떤 flow를 실행할지 계획을 출력한 뒤, 기존 `scripts/sdd-*.sh`와 guard/test script를 순서대로 호출한다.
+
+```bash
+scripts/ai-orch.sh help
+scripts/ai-orch.sh feature login "로그인 기능"
+scripts/ai-orch.sh plan login
+scripts/ai-orch.sh ready login
+scripts/ai-orch.sh implement login
+scripts/ai-orch.sh review login
+scripts/ai-orch.sh pr login
+```
+
+계획만 보고 실행하지 않으려면:
+
+```bash
+scripts/ai-orch.sh explain implement login
+```
 
 ## 설치 전제 조건
 
@@ -73,8 +135,8 @@ bunx oh-my-openagent version
 ### 1. repo 준비
 
 ```bash
-git clone <repository-url>
-cd shaul-ai-orch
+git clone https://github.com/shaul1991/ai-orch.git
+cd ai-orch
 ```
 
 ### 2. CLI 설치
@@ -213,7 +275,7 @@ git remote -v
 remote가 없다면 `.env`에 `GH_REPO`를 설정한다.
 
 ```bash
-AI_GITHUB_REPO=owner/shaul-ai-orch
+AI_GITHUB_REPO=owner/ai-orch
 AI_GITHUB_BASE_BRANCH=main
 AI_GITHUB_ISSUE_LIMIT=20
 AI_GITHUB_PR_LIMIT=20
