@@ -6,7 +6,7 @@
 
 - `AGENTS.md`는 Codex와 AGENTS.md를 인식하는 agent의 기본 지침이다.
 - Claude Code는 `CLAUDE.md`를 우선 읽을 수 있으므로, `CLAUDE.md`는 이 파일을 source of truth로 참조한다.
-- plugin만 다른 repository에 설치하는 경우, 이 repository의 `AGENTS.md`가 target repository로 자동 복사되지는 않는다. target repository에도 같은 정책이 필요하면 `AGENTS.md` 또는 `CLAUDE.md`를 별도로 둔다.
+- plugin이 다른 repository에 설치된 경우, `scripts/ai-orch.sh init`이 target repository에 `AGENTS.md`가 없거나 비어있으면 marketplace clone의 canonical `AGENTS.md`를 복사한다. 이미 내용이 있는 `AGENTS.md`는 덮어쓰지 않는다.
 
 ## 기본 언어
 

@@ -11,5 +11,5 @@ description: AI Orch 최초 필수 초기화를 수행한다. local 상태, sett
 
 1. AI Orch 사용 전 최초 필수 초기화를 실행한다고 간단히 설명한다.
 2. repository root에서 `scripts/ai-orch.sh init`을 실행한다.
-3. `.ai-orch/init.json` local marker, settings, 보호 정책, `.gitignore`, `CLAUDE.md -> AGENTS.md` symlink가 준비되었는지 요약한다.
+3. `.ai-orch/init.json` local marker, settings, 보호 정책, `.gitignore`, `AGENTS.md` template, `CLAUDE.md -> AGENTS.md` symlink가 준비되었는지 요약한다.
 4. 다음 단계로 `scripts/ai-orch.sh status` 또는 `/ai-orch:status`를 안내한다.
