@@ -10,6 +10,7 @@ mkdir -p scripts
 
 touch README.md
 touch AGENTS.md
+touch .env.example
 touch docs/ai-governance.md
 touch docs/project-settings.md
 touch docs/workflow.md
@@ -35,6 +36,7 @@ touch scripts/check-sdd-docs.sh
 touch scripts/ai-guard.sh
 touch scripts/run-tests.sh
 touch scripts/create-pr-draft.sh
+touch scripts/load-env.sh
 touch scripts/sdd-docs.sh
 touch scripts/sdd-plan.sh
 touch scripts/sdd-implement.sh
