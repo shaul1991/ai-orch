@@ -4,7 +4,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+source "$SCRIPT_DIR/load-env.sh"
+
 cd "$PROJECT_ROOT"
+
+AI_ORCH_ENV_LOADED=0
 
 usage() {
   cat <<'EOF_USAGE'
@@ -546,16 +550,54 @@ run_ready_flow() {
   scripts/check-sdd-docs.sh "$feature"
 }
 
+load_ai_orch_env_once() {
+  if [ "$AI_ORCH_ENV_LOADED" = "0" ]; then
+    load_project_env "$PROJECT_ROOT"
+    AI_ORCH_ENV_LOADED=1
+  fi
+}
+
+local_tests_enabled() {
+  local mode
+
+  load_ai_orch_env_once
+  mode="$(printf '%s' "${AI_LOCAL_TESTS:-run}" | tr '[:upper:]' '[:lower:]')"
+
+  case "$mode" in
+    run|true|1|yes|on|"")
+      return 0
+      ;;
+    skip|false|0|no|off)
+      return 1
+      ;;
+    *)
+      echo "[AI_ORCH_WARN] Unknown AI_LOCAL_TESTS value: ${AI_LOCAL_TESTS}. Running local tests."
+      return 0
+      ;;
+  esac
+}
+
+run_local_tests() {
+  local context="$1"
+
+  if local_tests_enabled; then
+    scripts/run-tests.sh
+  else
+    echo "[AI_ORCH_TESTS_SKIPPED] context=$context AI_LOCAL_TESTS=${AI_LOCAL_TESTS:-skip}"
+    echo "[AI_ORCH_TESTS_NOTE] GitHub Actions still runs scripts/run-tests.sh on main pushes and pull requests."
+  fi
+}
+
 run_implement_flow() {
   local feature="$1"
   scripts/check-sdd-docs.sh "$feature"
   scripts/sdd-implement.sh "$feature"
-  scripts/run-tests.sh
+  run_local_tests "implement"
 }
 
 run_review_flow() {
   local feature="$1"
-  scripts/run-tests.sh
+  run_local_tests "review"
   scripts/sdd-review-pr.sh "$feature"
 }
 
@@ -563,7 +605,7 @@ run_release_check_flow() {
   local feature="$1"
   scripts/sdd-analyze.sh "$feature"
   scripts/check-sdd-docs.sh "$feature"
-  scripts/run-tests.sh
+  run_local_tests "release-check"
   scripts/sdd-review-pr.sh "$feature"
 }
 
@@ -660,12 +702,12 @@ EOF_PLAN
 3. Load AI_CODE_PROVIDER / AI_CODE_MODEL.
 4. Execute Goose with .goose/recipes/sdd-implement.yaml.
 5. Implement only approved tasks.
-6. Run scripts/run-tests.sh.
+6. Run scripts/run-tests.sh unless local settings set AI_LOCAL_TESTS=skip.
 EOF_PLAN
       ;;
     review)
       cat <<'EOF_PLAN'
-1. Run scripts/run-tests.sh.
+1. Run scripts/run-tests.sh unless local settings set AI_LOCAL_TESTS=skip.
 2. Run scripts/sdd-review-pr.sh.
 3. Load AI_REVIEW_PROVIDER / AI_REVIEW_MODEL.
 4. Execute Goose with .goose/recipes/sdd-review-pr.yaml.
@@ -686,7 +728,7 @@ EOF_PLAN
       cat <<'EOF_PLAN'
 1. Run scripts/sdd-analyze.sh.
 2. Run scripts/check-sdd-docs.sh.
-3. Run scripts/run-tests.sh.
+3. Run scripts/run-tests.sh unless local settings set AI_LOCAL_TESTS=skip.
 4. Run scripts/sdd-review-pr.sh.
 5. Stop before merge or release.
 EOF_PLAN

@@ -7,6 +7,7 @@
   "AI_CODE_MODEL": "default",
   "AI_REVIEW_PROVIDER": "claude-code",
   "AI_REVIEW_MODEL": "default",
+  "AI_LOCAL_TESTS": "run",
   "AI_GITHUB_BASE_BRANCH": "main",
   "AI_GITHUB_ISSUE_LIMIT": "20",
   "AI_GITHUB_PR_LIMIT": "20"

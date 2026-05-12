@@ -543,6 +543,13 @@ flowchart TD
     SAMPLE --> END
 ```
 
+local `ai-orch` flow에서는 `.ai-orch/setting.local.json`의 `AI_LOCAL_TESTS`로 테스트 실행을 조정할 수 있다.
+
+| 값 | local `implement/review/release-check` | `doctor` | GitHub Actions |
+|---|---|---|---|
+| `run` | `scripts/run-tests.sh` 실행 | 실행 | 실행 |
+| `skip` | 생략 | 실행 | 실행 |
+
 ### 9.9 GitHub Helper Scripts
 
 GitHub helper는 `scripts/github-lib.sh`를 공유한다.

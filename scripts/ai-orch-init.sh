@@ -103,6 +103,7 @@ write_settings_templates() {
   "AI_CODE_MODEL": "default",
   "AI_REVIEW_PROVIDER": "claude-code",
   "AI_REVIEW_MODEL": "default",
+  "AI_LOCAL_TESTS": "run",
   "AI_GITHUB_BASE_BRANCH": "main",
   "AI_GITHUB_ISSUE_LIMIT": "20",
   "AI_GITHUB_PR_LIMIT": "20"
@@ -130,6 +131,8 @@ EOF_SETTING
   "_AI_REVIEW_PROVIDER": "self-review와 PR draft provider. 기본값: claude-code.",
   "AI_REVIEW_MODEL": "default",
   "_AI_REVIEW_MODEL": "self-review와 PR draft model. 기본값: default.",
+  "AI_LOCAL_TESTS": "run",
+  "_AI_LOCAL_TESTS": "local ai-orch flow에서 scripts/run-tests.sh 실행 여부. run 또는 skip. 기본값: run. GitHub Actions에는 적용하지 않는다.",
   "AI_GITHUB_ACCOUNT": "",
   "_AI_GITHUB_ACCOUNT": "여러 GitHub 계정을 쓰는 환경에서 active account를 확인하기 위한 선택값. 기본값: 미설정.",
   "AI_GITHUB_REPO": "",

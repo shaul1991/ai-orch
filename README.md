@@ -609,6 +609,7 @@ scripts/run-tests.sh
 
 실제 프로젝트에 적용할 때는 `scripts/run-tests.sh`를 기술 스택에 맞게 수정한다.
 또는 `AI_TEST_COMMANDS`에 줄 단위 명령을 지정할 수 있다.
+local `ai-orch` flow에서 GitHub Actions에 테스트를 위임하려면 `.ai-orch/setting.local.json`에 `"AI_LOCAL_TESTS": "skip"`을 둔다. 이 설정은 `implement`, `review`, `release-check`의 local 테스트만 생략하며, `doctor`와 GitHub Actions는 계속 `scripts/run-tests.sh`를 실행한다.
 
 예:
 
