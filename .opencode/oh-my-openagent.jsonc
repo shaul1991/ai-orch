@@ -1,0 +1,46 @@
+{
+  "$schema": "./schema.json",
+
+  "team_mode": {
+    "enabled": false,
+    "max_parallel_members": 3,
+    "tmux_visualization": true
+  },
+
+  "categories": {
+    "sdd-planning": {
+      "description": "Technical planning based only on approved human requirements"
+    },
+    "backend-implementation": {
+      "description": "Backend code implementation within approved SDD scope"
+    },
+    "self-review": {
+      "description": "Self-review and requirement traceability verification"
+    }
+  },
+
+  "agents": {
+    "planner": {
+      "temperature": 0.2,
+      "permission": "read-only",
+      "prompt": "You are a technical planner. Do not make domain or business decisions. If requirements are ambiguous, stop with HUMAN_DECISION_REQUIRED."
+    },
+    "architect-reviewer": {
+      "temperature": 0.1,
+      "permission": "read-only",
+      "prompt": "You are an architecture reviewer. Identify risks, conflicts, and missing decisions. Do not modify code."
+    },
+    "backend-implementer": {
+      "temperature": 0.2,
+      "permission": "workspace-write",
+      "prompt": "You implement only approved tasks. Do not add behavior outside requirements and acceptance criteria."
+    },
+    "self-reviewer": {
+      "temperature": 0.1,
+      "permission": "read-only",
+      "prompt": "You perform self-review against requirements, acceptance criteria, test plan, and changed files."
+    }
+  },
+
+  "disabled_hooks": []
+}

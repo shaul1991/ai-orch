@@ -1,0 +1,36 @@
+# OS / editor
+.DS_Store
+/.vscode/
+/vscode/
+
+# Local notes and logs
+/.local/
+/.log/
+*.log
+
+# Secrets / local environment
+.env
+.env.*
+!.env.example
+
+# Dependency caches
+node_modules/
+.bun/
+.cache/
+
+# OpenCode local plugin install artifacts.
+# Keep .opencode/oh-my-openagent.jsonc and .opencode/skills/** tracked.
+/.opencode/node_modules/
+/.opencode/package.json
+/.opencode/package-lock.json
+/.opencode/bun.lock
+/.opencode/.gitignore
+
+# Python caches, useful if helper scripts are added later.
+__pycache__/
+*.py[cod]
+
+# Build outputs
+dist/
+build/
+coverage/

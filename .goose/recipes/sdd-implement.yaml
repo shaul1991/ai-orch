@@ -1,0 +1,40 @@
+version: "1.0.0"
+title: "SDD Implementation"
+description: "Implement approved SDD tasks only."
+
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: "Feature directory name under docs/specs"
+
+instructions: |
+  You are working under Human-Governed SDD.
+
+  First run:
+  scripts/check-sdd-docs.sh {{ feature }}
+
+  Read:
+  - docs/ai-governance.md
+  - AGENTS.md
+  - docs/specs/{{ feature }}/requirements.md
+  - docs/specs/{{ feature }}/acceptance-criteria.md
+  - docs/specs/{{ feature }}/technical-plan.md
+  - docs/specs/{{ feature }}/tasks.md
+  - docs/specs/{{ feature }}/test-plan.md
+
+  Rules:
+  - Implement only tasks listed in tasks.md.
+  - Do not add features outside approved scope.
+  - Do not change business policy.
+  - Do not merge.
+  - Do not deploy.
+  - If ambiguity appears, stop and write HUMAN_DECISION_REQUIRED.
+
+  Tasks:
+  1. Inspect related code.
+  2. Implement approved tasks.
+  3. Add or update tests.
+  4. Run scripts/run-tests.sh.
+  5. Record test result notes.
+  6. Stop.
