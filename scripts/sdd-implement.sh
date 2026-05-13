@@ -22,5 +22,5 @@ MODEL="${AI_CODE_MODEL:-default}"
 goose run \
   --provider "$PROVIDER" \
   --model "$MODEL" \
-  --recipe .goose/recipes/sdd-implement.yaml \
+  --recipe "$PROJECT_ROOT/.goose/recipes/sdd-implement.yaml" \
   --params "feature=$FEATURE"

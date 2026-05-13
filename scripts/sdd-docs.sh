@@ -23,6 +23,6 @@ MODEL="${AI_DOC_MODEL:-gpt-5.5}"
 goose run \
   --provider "$PROVIDER" \
   --model "$MODEL" \
-  --recipe .goose/recipes/sdd-research-docs.yaml \
+  --recipe "$PROJECT_ROOT/.goose/recipes/sdd-research-docs.yaml" \
   --params "topic=$TOPIC" \
   --params "output=$OUTPUT"

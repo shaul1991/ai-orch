@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
 TARGET_REPO="$(pwd -P)"
 
+export AI_ORCH_TARGET_REPO="$TARGET_REPO"
 source "$SCRIPT_DIR/github-lib.sh"
 cd "$TARGET_REPO"
 

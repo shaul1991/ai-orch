@@ -5,6 +5,9 @@ SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
 TARGET_REPO="$(pwd -P)"
 SHARED_POLICY="$TARGET_REPO/ai-orch.protect"
+if [ ! -f "$SHARED_POLICY" ] && [ -f "$PROJECT_ROOT/ai-orch.protect" ]; then
+  SHARED_POLICY="$PROJECT_ROOT/ai-orch.protect"
+fi
 LOCAL_DENY_POLICY="$TARGET_REPO/.ai-orch/protect.local"
 LOCAL_ALLOW_POLICY="$TARGET_REPO/.ai-orch/protect.allow.local"
 

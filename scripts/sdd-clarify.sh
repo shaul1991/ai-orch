@@ -22,5 +22,5 @@ MODEL="${AI_DOC_MODEL:-gpt-5.5}"
 goose run \
   --provider "$PROVIDER" \
   --model "$MODEL" \
-  --recipe .goose/recipes/sdd-clarify.yaml \
+  --recipe "$PROJECT_ROOT/.goose/recipes/sdd-clarify.yaml" \
   --params "feature=$FEATURE"
