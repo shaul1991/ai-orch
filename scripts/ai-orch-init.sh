@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
 TARGET_REPO="$(pwd -P)"
-PLUGIN_VERSION="0.4.2"
+PLUGIN_VERSION="0.4.3"
 
 cd "$TARGET_REPO"
 
