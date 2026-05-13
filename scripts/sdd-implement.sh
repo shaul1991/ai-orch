@@ -23,4 +23,5 @@ goose run \
   --provider "$PROVIDER" \
   --model "$MODEL" \
   --recipe "$PROJECT_ROOT/.goose/recipes/sdd-implement.yaml" \
-  --params "feature=$FEATURE"
+  --params "feature=$FEATURE" \
+  --params "scripts_dir=$PROJECT_ROOT/scripts"

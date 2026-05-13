@@ -7,6 +7,10 @@ parameters:
     input_type: string
     requirement: required
     description: "Feature directory name under docs/specs"
+  - key: scripts_dir
+    input_type: string
+    requirement: required
+    description: "Absolute path to the plugin's scripts/ directory"
 
 instructions: |
   You are working under Human-Governed SDD.
@@ -17,7 +21,7 @@ instructions: |
   - The user may override the provider/model per task.
 
   First run:
-  scripts/check-sdd-docs.sh {{ feature }}
+  {{ scripts_dir }}/check-sdd-docs.sh {{ feature }}
 
   Read:
   - .specify/memory/constitution.md
@@ -54,6 +58,6 @@ instructions: |
   1. Inspect related code.
   2. Implement approved tasks.
   3. Add or update tests.
-  4. Run scripts/run-tests.sh.
+  4. Run {{ scripts_dir }}/run-tests.sh.
   5. Record test result notes.
   6. Stop.
