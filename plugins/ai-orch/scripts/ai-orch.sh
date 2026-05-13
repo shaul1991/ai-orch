@@ -33,6 +33,10 @@ Flows:
   doctor
       Check local script syntax and the sample SDD gate.
 
+  preflight
+      Inventory external CLI tools (jq, gh, goose, codex, claude) and print
+      install hints for any missing ones. Does not auto-install.
+
   docs <topic> <output-markdown-path>
       Run the documentation/research flow.
 
@@ -650,11 +654,20 @@ EOF_PLAN
 5. Block protected access unless the path is explicitly allowed locally.
 EOF_PLAN
       ;;
+    preflight)
+      cat <<'EOF_PLAN'
+1. Run scripts/preflight.sh.
+2. Probe each tracked CLI tool (jq, gh, goose, codex, claude) for presence and version.
+3. For any missing tool, print the install command for the detected OS and the docs URL.
+4. Exit 0 if every required-level tool is present; warn (not fail) for optional/flow-specific tools.
+EOF_PLAN
+      ;;
     doctor)
       cat <<'EOF_PLAN'
-1. Run scripts/run-tests.sh.
-2. Validate shell script syntax.
-3. Validate sample SDD gate.
+1. Run scripts/preflight.sh check (warn on any missing optional tools).
+2. Run scripts/run-tests.sh.
+3. Validate shell script syntax.
+4. Validate sample SDD gate.
 EOF_PLAN
       ;;
     docs)
@@ -778,7 +791,13 @@ run_flow() {
       ;;
     doctor)
       print_plan "$flow"
+      "$SCRIPT_DIR/preflight.sh" check || true
+      echo
       "$SCRIPT_DIR/run-tests.sh"
+      ;;
+    preflight)
+      print_plan "$flow"
+      "$SCRIPT_DIR/preflight.sh" "${1:-check}"
       ;;
     docs)
       local topic="${1:-}"

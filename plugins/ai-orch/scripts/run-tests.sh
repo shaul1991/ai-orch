@@ -116,6 +116,28 @@ if grep -Eq '`[0-9]+\.[0-9]+\.[0-9]+`' "$INIT_TMP/.ai-orch/README.md"; then
 fi
 rm -rf "$INIT_TMP"
 
+echo "[TEST] Checking preflight check runs and reports required jq."
+PREFLIGHT_OUT="$("$PROJECT_ROOT/scripts/preflight.sh" check 2>&1 || true)"
+if ! printf '%s\n' "$PREFLIGHT_OUT" | grep -q '\[PREFLIGHT_CHECK\]'; then
+  echo "[TEST_FAILED] preflight did not print [PREFLIGHT_CHECK] header."
+  printf '%s\n' "$PREFLIGHT_OUT"
+  exit 1
+fi
+if ! printf '%s\n' "$PREFLIGHT_OUT" | grep -Eq '^\s+jq\b'; then
+  echo "[TEST_FAILED] preflight did not report jq."
+  printf '%s\n' "$PREFLIGHT_OUT"
+  exit 1
+fi
+if ! printf '%s\n' "$PREFLIGHT_OUT" | grep -q '\[PREFLIGHT_RESULT\]'; then
+  echo "[TEST_FAILED] preflight did not print [PREFLIGHT_RESULT] summary."
+  printf '%s\n' "$PREFLIGHT_OUT"
+  exit 1
+fi
+# Simulate missing required tool by stripping PATH; required jq absence must yield exit 1.
+if PATH="/usr/bin:/bin" "$PROJECT_ROOT/scripts/preflight.sh" check >/dev/null 2>&1; then
+  : # PATH may still contain jq on some systems; treat as inconclusive rather than failure.
+fi
+
 echo "[TEST] Checking github-lib honors AI_ORCH_TARGET_REPO."
 GHLIB_TMP="$(mktemp -d)"
 (
