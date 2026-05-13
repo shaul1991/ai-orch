@@ -145,6 +145,17 @@ scripts/ai-orch.sh protect allow-read .env
 - requested file이 `ai-orch.protect` 또는 `.ai-orch/protect.local`에 match되고 local human-confirmed allow가 없음
 - PR draft가 생성됨
 
+## Review Loop Discipline
+
+자동 PR review bot (Codex, CodeRabbit 등) 의 응답 round 처리 규칙.
+
+- 동일 PR 의 review round 는 **최대 3 까지만 즉시 처리**한다. round 4 이상은 자동 수정 루프를 멈추고 사용자에게 escalate 한다.
+- round 카운트: 한 번의 push 에 대해 도착한 bot 의 review 묶음을 1 round 로 본다. 같은 round 에 여러 bot 이 응답하면 1 round 로 합산.
+- 한 round 의 review 가 현재 PR 의 변경 라인 밖에서도 **동일 convention 의 수정**을 요구하면, 별도 issue 를 생성하고 그 issue 의 branch/PR 에서 처리한다. 현재 PR 의 scope 는 본래 변경 라인에 한정한다.
+- 예외: 발견된 cross-cutting fix 가 **현재 PR 의 회귀를 닫기 위해 필수** (예: 같은 PR 변경의 직접 의존 chain) 인 경우에만 현재 PR 에서 같이 처리한다.
+- 동일 convention 여부 판단 기준: 같은 코드 패턴/관용구/규칙을 다른 파일에서도 적용해야 하는가. 같은 review 가 지적한 라인 자체의 fix 는 cross-cutting 이 아니라 본 round 처리.
+- escalate 시 보고 내용: 남은 review 목록, 패턴 / cross-cutting 여부 판정, 권장 follow-up issue 후보.
+
 ## Forbidden Actions
 
 절대 실행하지 않는다.
