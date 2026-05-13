@@ -38,7 +38,7 @@ This PR was prepared under Human-Governed SDD.
 
 ## SDD Documents
 
-- Constitution: \`.specify/memory/constitution.md\`
+- Constitution: \`.ai-orch/specify/memory/constitution.md\`
 - Spec: \`$BASE/spec.md\`
 - Requirements: \`$BASE/requirements.md\`
 - Acceptance Criteria: \`$BASE/acceptance-criteria.md\`

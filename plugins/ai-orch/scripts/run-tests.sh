@@ -74,17 +74,18 @@ INIT_TMP="$(mktemp -d)"
 )
 MISSING_FILES=()
 for f in \
-  .goose/recipes/sdd-specify.yaml \
-  .goose/recipes/sdd-clarify.yaml \
-  .goose/recipes/sdd-plan.yaml \
-  .goose/recipes/sdd-analyze.yaml \
-  .goose/recipes/sdd-implement.yaml \
-  .goose/recipes/sdd-review-pr.yaml \
-  .goose/recipes/sdd-research-docs.yaml \
-  .specify/memory/constitution.md \
-  docs/ai-governance.md \
-  docs/project-settings.md \
-  docs/specs/sample-feature/spec.md \
+  .ai-orch/goose/recipes/sdd-specify.yaml \
+  .ai-orch/goose/recipes/sdd-clarify.yaml \
+  .ai-orch/goose/recipes/sdd-plan.yaml \
+  .ai-orch/goose/recipes/sdd-analyze.yaml \
+  .ai-orch/goose/recipes/sdd-implement.yaml \
+  .ai-orch/goose/recipes/sdd-review-pr.yaml \
+  .ai-orch/goose/recipes/sdd-research-docs.yaml \
+  .ai-orch/specify/memory/constitution.md \
+  .ai-orch/docs/ai-governance.md \
+  .ai-orch/docs/project-settings.md \
+  .ai-orch/templates/sample-feature/spec.md \
+  .ai-orch/protect.shared \
   AGENTS.md; do
   if [ ! -f "$INIT_TMP/$f" ]; then
     MISSING_FILES+=("$f")
@@ -95,8 +96,21 @@ if [ ${#MISSING_FILES[@]} -gt 0 ]; then
   rm -rf "$INIT_TMP"
   exit 1
 fi
+# Negative check: target repo root should remain pure (no plugin artifacts leaked).
+for stray in .goose .specify docs/ai-governance.md docs/project-settings.md docs/specs ai-orch.protect; do
+  if [ -e "$INIT_TMP/$stray" ]; then
+    echo "[TEST_FAILED] ai-orch-init leaked plugin artifact to target root: $stray"
+    rm -rf "$INIT_TMP"
+    exit 1
+  fi
+done
 if [ ! -L "$INIT_TMP/CLAUDE.md" ]; then
   echo "[TEST_FAILED] ai-orch-init did not create CLAUDE.md symlink."
+  rm -rf "$INIT_TMP"
+  exit 1
+fi
+if grep -Eq '`[0-9]+\.[0-9]+\.[0-9]+`' "$INIT_TMP/.ai-orch/README.md"; then
+  echo "[TEST_FAILED] .ai-orch/README.md embeds a literal plugin version (issue #16 regression)."
   rm -rf "$INIT_TMP"
   exit 1
 fi
