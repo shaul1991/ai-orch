@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "shaul-ai-orch command용 repo-local Claude Code marketplace.",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "homepage": "https://github.com/shaul1991/ai-orch",
     "repository": "https://github.com/shaul1991/ai-orch"
   },
@@ -15,7 +15,7 @@
       "name": "ai-orch",
       "source": "./plugins/ai-orch",
       "description": "shaul-ai-orch용 Human-Governed SDD command layer.",
-      "version": "0.4.5",
+      "version": "0.4.6",
       "author": {
         "name": "SHAUL"
       },

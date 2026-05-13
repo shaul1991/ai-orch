@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
 TARGET_REPO="$(pwd -P)"
-PLUGIN_VERSION="0.4.5"
+PLUGIN_VERSION="0.4.6"
 
 cd "$TARGET_REPO"
 
@@ -338,3 +338,4 @@ write_init_marker
 
 echo "[AI_ORCH_INIT_DONE] ensured .ai-orch settings, protection files, and .gitignore local state rules."
 echo "[AI_ORCH_INIT_NEXT] run: /ai-orch:status"
+echo "[AI_ORCH_INIT_HINT] verify external CLI tools (jq, gh, goose, codex, claude): /ai-orch:preflight"
