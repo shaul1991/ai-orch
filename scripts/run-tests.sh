@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
+
 if [ -n "${AI_TEST_COMMANDS:-}" ]; then
   echo "[TEST] Running AI_TEST_COMMANDS."
   while IFS= read -r command; do
@@ -12,6 +15,8 @@ if [ -n "${AI_TEST_COMMANDS:-}" ]; then
   done <<< "$AI_TEST_COMMANDS"
   exit 0
 fi
+
+cd "$PROJECT_ROOT"
 
 echo "[TEST] Checking shell script syntax."
 
