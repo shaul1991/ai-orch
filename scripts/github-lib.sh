@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+PLUGIN_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
+PROJECT_ROOT="${AI_ORCH_TARGET_REPO:-$PLUGIN_ROOT}"
 
 source "$SCRIPT_DIR/load-env.sh"
 load_project_env "$PROJECT_ROOT"

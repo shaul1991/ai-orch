@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
+TARGET_REPO="$(pwd -P)"
 
 source "$SCRIPT_DIR/load-env.sh"
-load_project_env "$PROJECT_ROOT"
-cd "$PROJECT_ROOT"
+load_project_env "$TARGET_REPO"
+cd "$TARGET_REPO"
 
 FEATURE="${1:-}"
 
@@ -21,5 +22,5 @@ MODEL="${AI_REVIEW_MODEL:-default}"
 goose run \
   --provider "$PROVIDER" \
   --model "$MODEL" \
-  --recipe .goose/recipes/sdd-analyze.yaml \
+  --recipe "$PROJECT_ROOT/.goose/recipes/sdd-analyze.yaml" \
   --params "feature=$FEATURE"
