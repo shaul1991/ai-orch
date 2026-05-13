@@ -21,7 +21,7 @@ instructions: |
   - The user may override the provider/model per task.
 
   First run:
-  {{ scripts_dir }}/check-sdd-docs.sh {{ feature }}
+  "{{ scripts_dir }}/check-sdd-docs.sh" "{{ feature }}"
 
   Read:
   - .specify/memory/constitution.md
@@ -58,6 +58,6 @@ instructions: |
   1. Inspect related code.
   2. Implement approved tasks.
   3. Add or update tests.
-  4. Run {{ scripts_dir }}/run-tests.sh.
+  4. Run "{{ scripts_dir }}/run-tests.sh".
   5. Record test result notes.
   6. Stop.
