@@ -244,7 +244,7 @@ ensure_sample_feature() {
   fi
 
   if [ -e "$target_dir" ]; then
-    echo "[AI_ORCH_INIT_WARN] docs/specs/sample-feature/ exists in target; canonical version is in plugin source."
+    echo "[AI_ORCH_INIT_WARN] docs/specs/sample-feature/ exists in target; canonical version is in plugin source at docs/specs/sample-feature/."
     return 0
   fi
 
