@@ -1,6 +1,6 @@
 {
   "name": "ai-orch",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "ai-orch용 Human-Governed SDD command layer. slash command를 scripts/ai-orch.sh flow로 위임한다.",
   "author": {
     "name": "SHAUL"
