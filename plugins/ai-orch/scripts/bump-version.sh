@@ -3,7 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
-cd "$PROJECT_ROOT"
+REPO_ROOT="$(cd -P "$PROJECT_ROOT/../.." && pwd -P)"
+cd "$REPO_ROOT"
 
 usage() {
   cat <<'EOF_USAGE'

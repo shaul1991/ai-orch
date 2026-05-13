@@ -13,12 +13,12 @@ Arguments: `$ARGUMENTS`
 This command delegates to:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT:-.}/scripts/ai-orch.sh" init
+"${CLAUDE_PLUGIN_ROOT}/scripts/ai-orch.sh" init
 ```
 
 ## Instructions
 
 1. AI Orch 사용 전 최초 필수 초기화를 실행한다고 간단히 설명한다.
-2. `"${CLAUDE_PLUGIN_ROOT:-.}/scripts/ai-orch.sh" init`을 실행한다.
+2. `"${CLAUDE_PLUGIN_ROOT}/scripts/ai-orch.sh" init`을 실행한다.
 3. `.ai-orch/init.json` local marker, settings, 보호 정책, `.gitignore`, `AGENTS.md` template, `CLAUDE.md -> AGENTS.md` symlink가 준비되었는지 요약한다.
 4. 다음 단계로 `/ai-orch:status`를 안내한다.
