@@ -81,6 +81,32 @@ Codex는 plugin skill을 통해 같은 `/ai-orch:*` hinting을 노출한다. 설
 
 local clone을 직접 등록할 때는 repo root에서 `claude plugin marketplace add .` 또는 `codex plugin marketplace add .`를 실행한다.
 
+plugin을 최신 버전으로 업데이트하려면 marketplace와 plugin 본체를 각각 갱신한다.
+
+Claude Code 안에서:
+
+```text
+/plugin marketplace update ai-orch
+/plugin update ai-orch@ai-orch
+```
+
+Claude Code CLI에서:
+
+```bash
+claude plugin marketplace update ai-orch
+claude plugin update -s project ai-orch@ai-orch
+```
+
+업데이트 적용을 위해 Claude Code를 재시작한다.
+
+Codex:
+
+```bash
+codex plugin marketplace upgrade ai-orch
+```
+
+Codex는 marketplace 단위로 upgrade하면 등록된 plugin도 함께 갱신된다.
+
 활성화 후 1차 command set:
 
 ```text
