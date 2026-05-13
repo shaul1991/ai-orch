@@ -181,6 +181,78 @@ ensure_agents_md() {
   echo "[AI_ORCH_INIT_WROTE_AGENTS] copied AGENTS.md template from $source_file"
 }
 
+bootstrap_template() {
+  local rel_src="$1"
+  local rel_dst="$2"
+  local label="$3"
+  local source_file="$PROJECT_ROOT/$rel_src"
+  local target_file="$TARGET_REPO/$rel_dst"
+
+  if [ ! -f "$source_file" ]; then
+    echo "[AI_ORCH_INIT_WARN] template not found at $source_file; skipped $rel_dst."
+    return 0
+  fi
+
+  if [ "$source_file" = "$target_file" ]; then
+    return 0
+  fi
+
+  if [ -e "$target_file" ]; then
+    echo "[AI_ORCH_INIT_WARN] $rel_dst exists in target; canonical version is in plugin source at $rel_src."
+    return 0
+  fi
+
+  mkdir -p "$(dirname "$target_file")"
+  cp "$source_file" "$target_file"
+  echo "[AI_ORCH_INIT_WROTE_${label}] $rel_dst"
+}
+
+ensure_goose_recipes() {
+  local recipe
+  for recipe in \
+    sdd-specify.yaml \
+    sdd-clarify.yaml \
+    sdd-plan.yaml \
+    sdd-analyze.yaml \
+    sdd-implement.yaml \
+    sdd-review-pr.yaml \
+    sdd-research-docs.yaml; do
+    bootstrap_template ".goose/recipes/$recipe" ".goose/recipes/$recipe" "RECIPE"
+  done
+}
+
+ensure_specify_memory() {
+  bootstrap_template ".specify/memory/constitution.md" ".specify/memory/constitution.md" "CONSTITUTION"
+}
+
+ensure_governance_docs() {
+  bootstrap_template "docs/ai-governance.md" "docs/ai-governance.md" "AI_GOVERNANCE"
+  bootstrap_template "docs/project-settings.md" "docs/project-settings.md" "PROJECT_SETTINGS"
+}
+
+ensure_sample_feature() {
+  local source_dir="$PROJECT_ROOT/docs/specs/sample-feature"
+  local target_dir="$TARGET_REPO/docs/specs/sample-feature"
+
+  if [ ! -d "$source_dir" ]; then
+    echo "[AI_ORCH_INIT_WARN] sample-feature template directory not found at $source_dir."
+    return 0
+  fi
+
+  if [ "$source_dir" = "$target_dir" ]; then
+    return 0
+  fi
+
+  if [ -e "$target_dir" ]; then
+    echo "[AI_ORCH_INIT_WARN] docs/specs/sample-feature/ exists in target; canonical version is in plugin source at docs/specs/sample-feature/."
+    return 0
+  fi
+
+  mkdir -p "$(dirname "$target_dir")"
+  cp -R "$source_dir" "$target_dir"
+  echo "[AI_ORCH_INIT_WROTE_SAMPLE_FEATURE] docs/specs/sample-feature/"
+}
+
 ensure_claude_symlink() {
   if [ ! -e "AGENTS.md" ]; then
     echo "[AI_ORCH_INIT_WARN] AGENTS.md missing; skipping CLAUDE.md symlink."
@@ -249,6 +321,10 @@ write_local_state_readme
 write_settings_templates
 write_local_protect_template
 ensure_agents_md
+ensure_goose_recipes
+ensure_specify_memory
+ensure_governance_docs
+ensure_sample_feature
 ensure_claude_symlink
 write_init_marker
 

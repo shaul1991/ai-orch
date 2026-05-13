@@ -66,6 +66,42 @@ if (
 fi
 rm -rf "$FALLBACK_TMP"
 
+echo "[TEST] Checking ai-orch-init bootstraps SDD infrastructure into a fresh target."
+INIT_TMP="$(mktemp -d)"
+(
+  cd "$INIT_TMP"
+  "$PROJECT_ROOT/scripts/ai-orch-init.sh" >/dev/null
+)
+MISSING_FILES=()
+for f in \
+  .goose/recipes/sdd-specify.yaml \
+  .goose/recipes/sdd-clarify.yaml \
+  .goose/recipes/sdd-plan.yaml \
+  .goose/recipes/sdd-analyze.yaml \
+  .goose/recipes/sdd-implement.yaml \
+  .goose/recipes/sdd-review-pr.yaml \
+  .goose/recipes/sdd-research-docs.yaml \
+  .specify/memory/constitution.md \
+  docs/ai-governance.md \
+  docs/project-settings.md \
+  docs/specs/sample-feature/spec.md \
+  AGENTS.md; do
+  if [ ! -f "$INIT_TMP/$f" ]; then
+    MISSING_FILES+=("$f")
+  fi
+done
+if [ ${#MISSING_FILES[@]} -gt 0 ]; then
+  echo "[TEST_FAILED] ai-orch-init did not bootstrap: ${MISSING_FILES[*]}"
+  rm -rf "$INIT_TMP"
+  exit 1
+fi
+if [ ! -L "$INIT_TMP/CLAUDE.md" ]; then
+  echo "[TEST_FAILED] ai-orch-init did not create CLAUDE.md symlink."
+  rm -rf "$INIT_TMP"
+  exit 1
+fi
+rm -rf "$INIT_TMP"
+
 echo "[TEST] Checking github-lib honors AI_ORCH_TARGET_REPO."
 GHLIB_TMP="$(mktemp -d)"
 (
