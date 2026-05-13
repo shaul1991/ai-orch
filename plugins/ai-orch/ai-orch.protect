@@ -1,0 +1,69 @@
+# AI Orch 공유 보호 정책
+#
+# 문법:
+#   deny <glob>
+#   allow <glob>
+#
+# 개인별 추가 차단 규칙은 .ai-orch/protect.local에 둔다.
+# 사용자가 직접 확인한 local 허용 규칙은 scripts/ai-protect.sh가
+# .ai-orch/protect.allow.local에 기록한다.
+
+# local 환경 파일과 secret 자료.
+deny .env
+deny .env.*
+deny */.env
+deny */.env.*
+deny *.secret
+deny */*.secret
+deny *secret*
+deny */*secret*
+deny *secrets*
+deny */*secrets*
+deny *token*
+deny */*token*
+deny *credential*
+deny */*credential*
+
+# private key, certificate, common auth artifact.
+deny *.pem
+deny */*.pem
+deny *.key
+deny */*.key
+deny *.p12
+deny */*.p12
+deny *.pfx
+deny */*.pfx
+deny *.crt
+deny */*.crt
+deny id_rsa
+deny */id_rsa
+deny id_dsa
+deny */id_dsa
+deny id_ecdsa
+deny */id_ecdsa
+deny id_ed25519
+deny */id_ed25519
+
+# 일반적인 local credential 디렉터리.
+deny .ssh/*
+deny */.ssh/*
+deny ~/.ssh/*
+deny .aws/credentials
+deny */.aws/credentials
+deny ~/.aws/credentials
+deny .config/gcloud/*
+deny */.config/gcloud/*
+deny ~/.config/gcloud/*
+deny .azure/*
+deny */.azure/*
+deny ~/.azure/*
+
+# secret이 포함되기 쉬운 infra state와 variable 파일.
+deny *.tfstate
+deny */*.tfstate
+deny *.tfstate.*
+deny */*.tfstate.*
+deny *.tfvars
+deny */*.tfvars
+deny *.tfvars.json
+deny */*.tfvars.json
