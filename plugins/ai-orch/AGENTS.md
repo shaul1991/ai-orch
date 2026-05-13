@@ -76,14 +76,16 @@ init이 완료되기 전에는 `status`와 실행형 flow가 멈추고 init 실�
 
 구현 전에는 다음 순서로 읽는다.
 
-1. `.specify/memory/constitution.md`
-2. `docs/ai-governance.md`
-3. `docs/project-settings.md`
+1. `.ai-orch/specify/memory/constitution.md`
+2. `.ai-orch/docs/ai-governance.md`
+3. `.ai-orch/docs/project-settings.md`
 4. `docs/specs/{feature}/spec.md`
 5. `docs/specs/{feature}/requirements.md`
 6. `docs/specs/{feature}/acceptance-criteria.md`
 7. `docs/specs/{feature}/clarifications.md`
 8. 관련 기존 code
+
+처음 3 개는 plugin 이 init 시 `.ai-orch/` 하위로 bootstrap 하는 reference 문서다 (target repo 의 git history 에는 commit 하지 않음). pre-0.4.5 layout 의 `.specify/memory/constitution.md`, `docs/ai-governance.md`, `docs/project-settings.md` 가 그대로 남아 있는 경우에는 그 경로를 사용한다.
 
 ## Implementation Gate
 
@@ -120,7 +122,7 @@ scripts/ai-orch.sh protect check-write <path>
 
 보호 정책 파일:
 
-- shared deny/allow: `ai-orch.protect`
+- shared deny/allow: `.ai-orch/protect.shared` (init 시 plugin canonical 정책에서 bootstrap. pre-0.4.5 target 은 루트 `ai-orch.protect` 를 그대로 사용해도 됨)
 - local deny: `.ai-orch/protect.local`
 - local human-confirmed allow: `.ai-orch/protect.allow.local`
 
@@ -142,7 +144,7 @@ scripts/ai-orch.sh protect allow-read .env
 - feature 문서에 unresolved clarification marker가 있음
 - security 또는 authorization policy가 불명확함
 - payment, pricing, user permission, customer-facing policy에 영향이 있음
-- requested file이 `ai-orch.protect` 또는 `.ai-orch/protect.local`에 match되고 local human-confirmed allow가 없음
+- requested file이 `.ai-orch/protect.shared` (또는 legacy `ai-orch.protect`) 또는 `.ai-orch/protect.local`에 match되고 local human-confirmed allow가 없음
 - PR draft가 생성됨
 
 ## Review Loop Discipline

@@ -15,8 +15,21 @@ add_failure() {
   FAILURES+=("$1")
 }
 
+CONSTITUTION_FOUND=""
+for candidate in \
+  ".ai-orch/specify/memory/constitution.md" \
+  ".specify/memory/constitution.md"; do
+  if [ -f "$candidate" ]; then
+    CONSTITUTION_FOUND="$candidate"
+    break
+  fi
+done
+
+if [ -z "$CONSTITUTION_FOUND" ]; then
+  add_failure "Missing required file: .ai-orch/specify/memory/constitution.md (legacy fallback: .specify/memory/constitution.md)"
+fi
+
 REQUIRED_FILES=(
-  ".specify/memory/constitution.md"
   "$BASE/spec.md"
   "$BASE/requirements.md"
   "$BASE/acceptance-criteria.md"

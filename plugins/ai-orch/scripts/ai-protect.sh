@@ -4,7 +4,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
 TARGET_REPO="$(pwd -P)"
-SHARED_POLICY="$TARGET_REPO/ai-orch.protect"
+# Shared policy lookup order:
+#   1. target's new isolated location (.ai-orch/protect.shared) -- per issues #15
+#   2. target's legacy root location (ai-orch.protect) -- pre-0.4.5 layout
+#   3. plugin's canonical bundled policy
+SHARED_POLICY="$TARGET_REPO/.ai-orch/protect.shared"
+if [ ! -f "$SHARED_POLICY" ] && [ -f "$TARGET_REPO/ai-orch.protect" ]; then
+  SHARED_POLICY="$TARGET_REPO/ai-orch.protect"
+fi
 if [ ! -f "$SHARED_POLICY" ] && [ -f "$PROJECT_ROOT/ai-orch.protect" ]; then
   SHARED_POLICY="$PROJECT_ROOT/ai-orch.protect"
 fi
@@ -147,9 +154,14 @@ local_allow_match() {
 protected_match() {
   local mode="$1"
   local path="$2"
-  local match
+  local match shared_label
 
   path="$(normalize_path "$path")"
+
+  case "$SHARED_POLICY" in
+    "$TARGET_REPO"/*) shared_label="${SHARED_POLICY#"$TARGET_REPO"/}" ;;
+    *) shared_label="$SHARED_POLICY" ;;
+  esac
 
   if match="$(match_policy_file "$LOCAL_DENY_POLICY" deny "$path" ".ai-orch/protect.local")"; then
     printf '%s\n' "$match"
@@ -160,11 +172,11 @@ protected_match() {
     return 1
   fi
 
-  if match="$(match_policy_file "$SHARED_POLICY" allow "$path" "ai-orch.protect")"; then
+  if match="$(match_policy_file "$SHARED_POLICY" allow "$path" "$shared_label")"; then
     return 1
   fi
 
-  if match="$(match_policy_file "$SHARED_POLICY" deny "$path" "ai-orch.protect")"; then
+  if match="$(match_policy_file "$SHARED_POLICY" deny "$path" "$shared_label")"; then
     printf '%s\n' "$match"
     return 0
   fi

@@ -69,6 +69,10 @@ Flows:
   status [feature-name]
       Show the current branch flow checklist and local artifacts.
 
+  version
+      Print the plugin version. Reads .ai-orch/init.json when available,
+      otherwise falls back to the bundled PLUGIN_VERSION constant.
+
 Examples:
   scripts/ai-orch.sh init
   scripts/ai-orch.sh protect list
@@ -307,7 +311,7 @@ artifact_links_for_flow() {
       add_artifact ".gitignore"
       ;;
     protect)
-      add_artifact "ai-orch.protect"
+      add_artifact ".ai-orch/protect.shared"
       add_artifact ".ai-orch/protect.local"
       add_artifact ".ai-orch/protect.allow.local"
       ;;
@@ -626,20 +630,21 @@ print_plan() {
     init)
       cat <<'EOF_PLAN'
 1. Run scripts/ai-orch-init.sh.
-2. Create or refresh .ai-orch/README.md with the current plugin version.
+2. Create or refresh static .ai-orch/README.md (plugin version is recorded in .ai-orch/init.json, not in README).
 3. Create .ai-orch/setting.json, .ai-orch/settings.example.json, and .ai-orch/setting.local.json when missing.
 4. Create .ai-orch/protect.local template when missing.
-5. Ensure CLAUDE.md points to AGENTS.md as a symlink when missing.
-6. Write .ai-orch/init.json local marker.
-7. Ensure .gitignore ignores local state while keeping shared .ai-orch files trackable.
-8. Record init completion in the current branch local state.
-9. Print the next status command.
+5. Bootstrap plugin reference artifacts into .ai-orch/: goose/recipes/, specify/memory/constitution.md, docs/{ai-governance,project-settings}.md, templates/sample-feature/, protect.shared.
+6. Ensure CLAUDE.md points to AGENTS.md as a symlink when missing.
+7. Write .ai-orch/init.json local marker with pluginVersion.
+8. Ensure .gitignore ignores local state while keeping shared .ai-orch files trackable.
+9. Record init completion in the current branch local state.
+10. Print the next status command.
 EOF_PLAN
       ;;
     protect)
       cat <<'EOF_PLAN'
 1. Run scripts/ai-protect.sh with the requested action.
-2. Load shared policy from ai-orch.protect.
+2. Load shared policy from .ai-orch/protect.shared (legacy fallback: ai-orch.protect at repo root, then bundled plugin policy).
 3. Load local deny policy from .ai-orch/protect.local when present.
 4. Load user-confirmed local allow policy from .ai-orch/protect.allow.local when present.
 5. Block protected access unless the path is explicitly allowed locally.
@@ -847,6 +852,19 @@ run_flow() {
       local target_flow="${1:-}"
       need_arg "$target_flow" "explain requires <flow>."
       print_plan "$target_flow" "${2:-}"
+      ;;
+    version)
+      local marker="$TARGET_REPO/.ai-orch/init.json"
+      if [ -f "$marker" ] && command -v jq >/dev/null 2>&1; then
+        local recorded
+        recorded="$(jq -r '.pluginVersion // empty' "$marker" 2>/dev/null)"
+        if [ -n "$recorded" ]; then
+          echo "$recorded"
+          return 0
+        fi
+      fi
+      grep '^PLUGIN_VERSION=' "$SCRIPT_DIR/ai-orch-init.sh" | head -1 \
+        | sed -E 's/^PLUGIN_VERSION="([^"]+)".*/\1/'
       ;;
     *)
       echo "[AI_ORCH_FAILED] Unknown flow: $flow"

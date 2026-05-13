@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 PROJECT_ROOT="$(cd -P "$SCRIPT_DIR/.." && pwd -P)"
 TARGET_REPO="$(pwd -P)"
-PLUGIN_VERSION="0.4.4"
+PLUGIN_VERSION="0.4.5"
 
 cd "$TARGET_REPO"
 
@@ -39,54 +39,57 @@ ensure_gitignore() {
 write_local_state_readme() {
   mkdir -p ".ai-orch"
 
-  cat > ".ai-orch/README.md" <<EOF_README
+  cat > ".ai-orch/README.md" <<'EOF_README'
 # AI Orch Local State
 
-\`.ai-orch/\`는 AI Orch의 local/개인별 실행 이력 cache를 저장하는 디렉터리다.
+`.ai-orch/`는 AI Orch의 local/개인별 실행 이력 cache 및 plugin이 target repo에 bootstrap한 참조 artifact를 모두 격리해 두는 디렉터리다.
 
-현재 plugin version: \`$PLUGIN_VERSION\`
+현재 plugin version은 `.ai-orch/init.json`의 `pluginVersion` 또는 `scripts/ai-orch.sh version`으로 확인한다.
 
 ## Git 정책
 
-- \`README.md\`, \`setting.json\`, \`settings.example.json\`만 git에 추적한다.
-- \`init.json\`, 개인 설정, 실제 실행 이력은 git에 커밋하지 않는다.
+- `README.md`, `setting.json`, `settings.example.json`만 git에 추적한다.
+- 다른 모든 `.ai-orch/` 하위 항목 (recipes, constitution, governance docs, sample-feature 템플릿, shared protection policy, init.json, branch state, run log 등) 은 git에 commit 하지 않는다. plugin 버전이 올라가도 target repo의 git history는 영향을 받지 않는다.
 - branch별 status와 run log는 개인 로컬 상태로만 유지한다.
 
 ## 생성 경로
 
-\`\`\`text
+```text
 .ai-orch/
-├── README.md          # tracked
-├── setting.json       # tracked, AI Orch 공유 설정
-├── settings.example.json # tracked, 설정 key/default 안내
-├── init.json          # ignored, init 실행 여부 marker
-├── setting.local.json # ignored, 개인별 설정 override
-├── protect.local      # ignored, 개인별 추가 deny policy
-├── protect.allow.local # ignored, 사용자 확인 후 등록한 allow policy
-├── branches/          # ignored
-│   └── {branch}.md    # branch별 flow checklist
-├── state/             # ignored
-│   └── {branch}.state # script가 읽는 key-value cache
-└── runs/              # ignored
-    └── *.md           # flow 실행 event log
-\`\`\`
+├── README.md                          # tracked
+├── setting.json                       # tracked, AI Orch 공유 설정
+├── settings.example.json              # tracked, 설정 key/default 안내
+├── init.json                          # ignored, init marker + pluginVersion
+├── setting.local.json                 # ignored, 개인별 설정 override
+├── protect.local                      # ignored, 개인별 추가 deny policy
+├── protect.allow.local                # ignored, 사용자 확인 후 등록한 allow policy
+├── protect.shared                     # ignored, plugin이 bootstrap한 공유 보호 정책
+├── goose/recipes/                     # ignored, plugin이 bootstrap한 SDD recipe
+├── specify/memory/constitution.md     # ignored, plugin이 bootstrap한 SDD constitution
+├── docs/ai-governance.md              # ignored, plugin이 bootstrap한 governance reference
+├── docs/project-settings.md           # ignored, plugin이 bootstrap한 project settings reference
+├── templates/sample-feature/          # ignored, plugin이 bootstrap한 SDD template
+├── branches/{branch}.md               # ignored, branch별 flow checklist
+├── state/{branch}.state               # ignored, script가 읽는 key-value cache
+└── runs/*.md                          # ignored, flow 실행 event log
+```
 
 ## 기준 정보
 
-- 공유 산출물: \`docs/specs/{feature}/...\`
-- local 실행 상태: \`.ai-orch/branches/{branch}.md\`
+- 공유 산출물: `docs/specs/{feature}/...` (target repo 실제 작업 경로)
+- local 실행 상태: `.ai-orch/branches/{branch}.md`
 - PR/merge/release 판단: human-owned
 
 ## 초기화
 
-\`scripts/ai-orch.sh init\`은 이 파일과 \`.gitignore\`의 AI Orch local state 규칙을 보장한다.
+`scripts/ai-orch.sh init`은 이 파일과 `.gitignore`의 AI Orch local state 규칙을 보장한다.
 
 ## 보호 정책
 
-- 공유 보호 정책: \`ai-orch.protect\`
-- 개인별 추가 차단: \`.ai-orch/protect.local\`
-- 사용자 확인 후 local 허용: \`.ai-orch/protect.allow.local\`
-- 접근 확인: \`scripts/ai-orch.sh protect check-read <path>\`
+- 공유 보호 정책: `.ai-orch/protect.shared`
+- 개인별 추가 차단: `.ai-orch/protect.local`
+- 사용자 확인 후 local 허용: `.ai-orch/protect.allow.local`
+- 접근 확인: `scripts/ai-orch.sh protect check-read <path>`
 EOF_README
 }
 
@@ -217,22 +220,26 @@ ensure_goose_recipes() {
     sdd-implement.yaml \
     sdd-review-pr.yaml \
     sdd-research-docs.yaml; do
-    bootstrap_template ".goose/recipes/$recipe" ".goose/recipes/$recipe" "RECIPE"
+    bootstrap_template ".goose/recipes/$recipe" ".ai-orch/goose/recipes/$recipe" "RECIPE"
   done
 }
 
 ensure_specify_memory() {
-  bootstrap_template ".specify/memory/constitution.md" ".specify/memory/constitution.md" "CONSTITUTION"
+  bootstrap_template ".specify/memory/constitution.md" ".ai-orch/specify/memory/constitution.md" "CONSTITUTION"
 }
 
 ensure_governance_docs() {
-  bootstrap_template "docs/ai-governance.md" "docs/ai-governance.md" "AI_GOVERNANCE"
-  bootstrap_template "docs/project-settings.md" "docs/project-settings.md" "PROJECT_SETTINGS"
+  bootstrap_template "docs/ai-governance.md" ".ai-orch/docs/ai-governance.md" "AI_GOVERNANCE"
+  bootstrap_template "docs/project-settings.md" ".ai-orch/docs/project-settings.md" "PROJECT_SETTINGS"
+}
+
+ensure_shared_protect() {
+  bootstrap_template "ai-orch.protect" ".ai-orch/protect.shared" "PROTECT_SHARED"
 }
 
 ensure_sample_feature() {
   local source_dir="$PROJECT_ROOT/docs/specs/sample-feature"
-  local target_dir="$TARGET_REPO/docs/specs/sample-feature"
+  local target_dir="$TARGET_REPO/.ai-orch/templates/sample-feature"
 
   if [ ! -d "$source_dir" ]; then
     echo "[AI_ORCH_INIT_WARN] sample-feature template directory not found at $source_dir."
@@ -244,13 +251,13 @@ ensure_sample_feature() {
   fi
 
   if [ -e "$target_dir" ]; then
-    echo "[AI_ORCH_INIT_WARN] docs/specs/sample-feature/ exists in target; canonical version is in plugin source at docs/specs/sample-feature/."
+    echo "[AI_ORCH_INIT_WARN] .ai-orch/templates/sample-feature/ exists in target; canonical version is in plugin source at docs/specs/sample-feature/."
     return 0
   fi
 
   mkdir -p "$(dirname "$target_dir")"
   cp -R "$source_dir" "$target_dir"
-  echo "[AI_ORCH_INIT_WROTE_SAMPLE_FEATURE] docs/specs/sample-feature/"
+  echo "[AI_ORCH_INIT_WROTE_SAMPLE_FEATURE] .ai-orch/templates/sample-feature/"
 }
 
 ensure_claude_symlink() {
@@ -285,7 +292,7 @@ write_init_marker() {
     "local": ".ai-orch/setting.local.json"
   },
   "protection": {
-    "shared": "ai-orch.protect",
+    "shared": ".ai-orch/protect.shared",
     "localDeny": ".ai-orch/protect.local",
     "localAllow": ".ai-orch/protect.allow.local"
   },
@@ -324,6 +331,7 @@ ensure_agents_md
 ensure_goose_recipes
 ensure_specify_memory
 ensure_governance_docs
+ensure_shared_protect
 ensure_sample_feature
 ensure_claude_symlink
 write_init_marker
